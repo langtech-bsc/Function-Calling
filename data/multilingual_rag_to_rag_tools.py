@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 from pathlib import Path
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tools.retrieve_context import get_openai_tools
 
 env_path = Path(__file__).resolve().parents[1] / '.env'
