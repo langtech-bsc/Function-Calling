@@ -1,0 +1,364 @@
+{
+  "Hotel": "Nou Vall de Núria",
+  "address": "Sant Gil, s/n, 17527 Queralbs, Girona",
+  "company name": "Nou Vall de Núria, S.A.",
+  "telephone": "+34 972 73 20 20",
+  "email": "info@hotelvalldenuria.cat",
+  "General Facilities": [
+    "Wi-Fi gratuït",
+    "Piscina exterior",
+    "Sala de gimnàs",
+    "Sauna",
+    "Servei de lavanderia",
+    "Servei de recepció 24 hores"
+  ],
+  "Restaurants": [
+    {
+      "restaurant name": "Restaurant Nou Vall de Núria",
+      "description": "Ofereix una cuina catalana tradicional amb productes locals",
+      "open hours": "De 8:00 a 22:00 hores"
+    },
+    {
+      "restaurant name": "Bar del Hotel",
+      "description": "Ofereix begudes i aperitius",
+      "open hours": "De 10:00 a 23:00 hores"
+    }
+  ],
+  "accomodations": {
+    "rooms": [
+      {
+        "room number": "1",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "2",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "3",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "4",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "5",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "6",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "7",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "8",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "9",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "10",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "11",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "12",
+        "type": ["standard"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació estàndard amb vista al jardí",
+        "price": 80
+      },
+      {
+        "room number": "13",
+        "type": ["superior"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació superior amb vista al jardí",
+        "price": 120
+      },
+      {
+        "room number": "14",
+        "type": ["superior"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació superior amb vista al jardí",
+        "price": 120
+      },
+      {
+        "room number": "15",
+        "type": ["superior"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació superior amb vista al jardí",
+        "price": 120
+      },
+      {
+        "room number": "16",
+        "type": ["superior"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació superior amb vista al jardí",
+        "price": 120
+      },
+      {
+        "room number": "17",
+        "type": ["superior"], 
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Habitació superior amb vista al jardí",
+        "price": 120
+      },
+      {
+        "room number": "18",
+        "type": ["suite"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Suite amb vista al jardí",
+        "price": 200
+      },
+      {
+        "room number": "19",
+        "type": ["suite"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Suite amb vista al jardí",
+        "price": 200
+      },
+      {
+        "room number": "20",
+        "type": ["suite"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Suite amb vista al jardí",
+        "price": 200
+      },
+      {
+        "room number": "21",
+        "type": ["suite"],
+        "number of guests": 2,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "1 llit doble",
+        "description": "Suite amb vista al jardí",
+        "price": 200
+      },
+      {
+        "room number": "22",
+        "type": ["apartment"],
+        "number of guests": 4,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "2 llits individuals",
+        "description": "Apartament amb vista al jardí",
+        "price": 350
+      },
+      {
+        "room number": "23",
+        "type": ["apartment"],
+        "number of guests": 4,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "2 llits individuals",
+        "description": "Apartament amb vista al jardí",
+        "price": 350
+      },
+      {
+        "room number": "24",
+        "type": ["apartment"],
+        "number of guests": 4,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "2 llits individuals",
+        "description": "Apartament amb vista al jardí",
+        "price": 350
+      },
+      {
+        "room number": "25",
+        "type": ["apartment"],
+        "number of guests": 4,
+        "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
+        "available": true,
+        "starting date of availability": "2024-03-01",
+        "distribution of beds": "2 llits individuals",
+        "description": "Apartament amb vista al jardí",
+        "price": 350
+      }
+    ]
+  },
+  "nightly accomodation prices": {
+    "standard": 80,
+    "superior": 120,
+    "suite": 200,
+    "apartment": 350
+  },
+  "packs": [
+     {
+    "pack name": "Paquet Familiar",
+    "pack description": "Inclou estada per a 2 adults i 2 nens, esmorzar bufet i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Paquet Romantic",
+    "pack description": "Inclou estada per a 2 persones, dinar de gala i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Esquí",
+    "pack description": "Inclou estada, esmorzar bufet, forfait d'esquí i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Esquí + Classe",
+    "pack description": "Inclou estada, esmorzar bufet, forfait d'esquí, classe d'esquí i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Esquí + Lloguer",
+    "pack description": "Inclou estada, esmorzar bufet, forfait d'esquí, lloguer d'equip d'esquí i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Relax",
+    "pack description": "Inclou estada, esmorzar bufet, accés a la piscina i el gimnàs, i tractament de spa"
+  },
+  {
+    "pack name": "Pack Gastronòmic",
+    "pack description": "Inclou estada, esmorzar bufet, dinar de gala i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Senderisme",
+    "pack description": "Inclou estada, esmorzar bufet, accés a les rutes de senderisme i accés a les instal·lacions de l'hotel"
+  },
+  {
+    "pack name": "Pack Bicicleta",
+    "pack description": "Inclou estada, esmorzar bufet, lloguer de bicicleta i accés a les instal·lacions de l'hotel"
+  }
+  ],
+  "activities": [
+    {
+      "activity name": "Senderisme",
+      "activity description": "Rutes de senderisme pel parc natural de la Vall de Núria"
+    },
+    {
+      "activity name": "Esquí",
+      "activity description": "Accés a les pistes d'esquí de la Vall de Núria"
+    },
+    {
+      "activity name": "Pescar",
+      "activity description": "Pescar a la llacuna de la Vall de Núria"
+    }
+  ]
+}
