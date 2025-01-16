@@ -51,6 +51,7 @@ torchrun --nproc_per_node=10 generate_data/xitxat-to-tool/generate.py \
 | `--xitxat_data`   | string | (required)                     | Path to the XitXat data file.                                               |
 | `--hf_token`      | string | `hf_xxxx`                      | Hugging Face authentication token.                                          |
 | `--api_token`     | string | `None`                         | OpenAI API token.                                                           |
+| `--model`         | string | `tgi`                          | Model to use.                                                               |
 
 ### Notes
 
