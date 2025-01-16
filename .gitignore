@@ -1,3 +1,5 @@
 .env
 venv
 data/tmp.json
+**/__pycache__
+metadata

@@ -1,12 +1,13 @@
 from datasets import load_dataset, Dataset, DatasetDict
 from openai import OpenAI
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool, Manager, cpu_count
 import json
 from dotenv import load_dotenv
 import os
 import pandas as pd
 from pathlib import Path
 import sys
+import threading
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tools.retrieve_context import get_openai_tools
 
@@ -25,22 +26,22 @@ tools = get_openai_tools()
 _prompt = """
 You are tasked with converting the following structured data into a conversation that uses function calling to retrieve relevant information from a tool. The conversation must follow this pattern:
 
-1. The user asks a question.
-2. The assistant makes a function call to retrieve relevant context from a vector store, providing an optimized prompt.
+1. The human (user) asks a question.
+2. The gpt (assistant) makes a function call to retrieve relevant context from a vector store, providing an optimized prompt.
 3. The tool returns the context based on the function call.
-4. The assistant provides the response to the user, based on the returned context.
-5. The conversation continues with additional questions from the user and answers from the assistant, some based on the context and others outside of it.
-6. The language must preserve, if user askes question in spanish, all other questions and answers must be in spanish, same with other languages.
+4. The gpt provides the response to the human, based on the returned context.
+5. The conversation continues with additional questions from the human and answers from the gpt, some based on the context and others outside of it.
+6. The language must preserve, if human askes question in spanish, all other questions and answers must be in spanish, same with other languages.
 
 ### Instructions:
 1. Use the following placeholders:
-   - **INSTRUCTION**: The user's initial question or instruction.
-   - **CONTEXT**: The relevant context returned from the vector store, which helps the assistant answer.
-   - **RESPONSE**: The assistant’s answer based on the context.
-2. The output should be structured as a list of conversation turns, where each turn is a dictionary with the keys `role` (which can be "user", "assistant", "tool", or "system") and `value` (which can be plain text or a tool call or response).
+   - **INSTRUCTION**: The human's initial question or instruction.
+   - **CONTEXT**: The relevant context returned from the vector store, which helps the gpt answer.
+   - **RESPONSE**: The gpt answer based on the context.
+2. The output should be structured as a list of conversation turns, where each turn is a dictionary with the keys `role` (which can be "human", "gpt", "tool", or "system") and `value` (which can be plain text or a tool call or response).
 
 ### Conversation Structure Example:
-1. The user asks a question.
+1. The human asks a question.
 2. The assistant makes a function call using `<tool_call>` with the function name and it's arguments.
 3. The tool returns the context inside `<tool_response>`.
 4. The assistant provides the response based on the returned context.
@@ -68,51 +69,50 @@ This is just an example; you should generate your data based on the following fo
 
 [
     {{
-        "role": "user", 
+        "from": "human", 
         "value": "{{INSTRUCTION}}"
     }},
     {{
-        "role": "assistant", 
+        "from": "gpt", 
         "value": "<tool_call>\n{{'arguments': {{'prompt': '{optimized_instruction}', 'function_name': 'retrieve_context'}}}}\n</tool_call>"
     }},
     {{
-        "role": "tool", 
+        "from": "tool", 
         "value": "<tool_response>{{CONTEXT}}</tool_response>"
     }},
     {{
-        "role": "assistant", 
+        "from": "gpt", 
         "value": "{{RESPONSE}}"
     }},
     {{
-        "role": "user", 
+        "from": "human", 
         "value": "Follow-up question based on the response or context"
     }},
     {{
-        "role": "assistant", 
+        "from": "gpt", 
         "value": "Assistant answer based on context"
     }},
     {{
-        "role": "user", 
+        "from": "human", 
         "value": "Follow-up question based on the response or context, or unrelated to question or context"
     }},
      {{
-        "role": "assistant", 
+        "from": "gpt", 
         "value": "Assistant answer related or not related to the context, depending on the question"
     }},
     .
     .
     .
     {{
-        "role": "user",
+        "from": "human",
         "value": "Unrelated or related question"
     }},
     {{
-        "role": "assistant", 
+        "from": "gpt", 
         "value": "Assistant answer related or not related to the context, depending on the question"
     }}
 ]
 """
-
 
 
 _prompt2 = """
@@ -141,48 +141,48 @@ def save(json_data: dict):
         json.dump(json_data, file, ensure_ascii=False, indent=4)
 
 def get_conversations(context, response, instruction):
-    prompt = _prompt2.format(instruction=instruction, context=context)
-    messages = [{"role": "user", "content": prompt}]
+    responses = [None, None]
+    def run_completion(index, messages, max_tokens, temperature):
+        try:
+            chat_completion = client.chat.completions.create(
+                model="tgi",
+                messages=messages,
+                stream=False,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            if index == 0:
+                responses[index] = chat_completion.choices[0].message.content.split("Improved_query:")[-1].strip()
+            else:
+                responses[index] = chat_completion.choices[0].message.content
+        except Exception as err:
+            print(err)
+            return None
+            # raise err
 
-    try:
-        chat_completion = client.chat.completions.create(
-        model="tgi",
-        messages=messages,
-        stream=False,
-        max_tokens=500,
-        temperature=0.3,
-        # presence_penalty=1.2,
-    )
-    except Exception as err:
-        print(err)
-        raise err
-    
-    optimized_instruction = chat_completion.choices[0].message.content.split("Improved_query:")[-1].strip()
-    prompt = _prompt.format(context=context, response=response, instruction=instruction, optimized_instruction=optimized_instruction)
-    messages = [{"role": "user", "content": prompt}]
-    try:
-        chat_completion = client.chat.completions.create(
-        model="tgi",
-        messages=messages,
-        stream=False,
-        max_tokens=4000,
-        temperature=0.3,
-        # presence_penalty=1.2,
-    )
-    except Exception as err:
-        print(err)
-        raise err
-    
-    text = chat_completion.choices[0].message.content
+    messages = [{"role": "user", "content": _prompt2.format(instruction=instruction, context=context)}]
+    t1 = threading.Thread(target=run_completion, args=(0, messages, 500, 0.3))
 
+    messages = [{"role": "user", "content": _prompt.format(context=context, response=response, instruction=instruction, optimized_instruction=instruction)}]    
+    t2 = threading.Thread(target=run_completion, args=(1, messages, 4000, 0.3))
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+    
+    optimized_instruction = responses[0]
+    text = responses[1]
     try:
         data = json.loads(text)
         data[0]["value"] = instruction
+        data[1]["value"] = f"""<tool_call>\n{{'arguments': {{'prompt': '{optimized_instruction}', 'function_name': 'retrieve_context'}}}}\n</tool_call>"""
         data[2]["value"] = context
         data[3]["value"] = response
     except Exception as err:
-        print(text)
-        print("^" * 20)
+        # print(text)
+        # print("^" * 20)
         print(err)
         return None
     
@@ -201,7 +201,11 @@ def process_row(row, shared_dict, lock):
 def process_split(pdata, shared_dict, lock):
     rows = [row for _, row in pdata.iterrows() if row["id"] not in shared_dict]
     print(len(rows))
-    with Pool(processes=10) as pool:
+    workers = cpu_count() - 2
+    if workers > 8:
+        workers = 8
+    print("total workers:", workers)
+    with Pool(processes=workers) as pool:
         pool.starmap(process_row, [(row, shared_dict, lock) for row in rows])
 
     save(dict(shared_dict))  # Convert to regular dict for saving
