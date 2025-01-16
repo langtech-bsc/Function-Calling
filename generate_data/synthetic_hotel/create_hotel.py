@@ -9,7 +9,7 @@ from openai import OpenAI
 
 client = OpenAI(
 	base_url="https://api-inference.huggingface.co/v1/",
-	api_key="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"
+	api_key=HF_TOKEN
 )
 
 
