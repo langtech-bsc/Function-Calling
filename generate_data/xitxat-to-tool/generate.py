@@ -9,8 +9,8 @@ from concurrent.futures import ThreadPoolExecutor
 import torch
 import time
 import threading
+from check_data import check_data
 
-META_DIRECTORY = "xitxat_metadata"
 
 SYSTEM_TOOLS="""
 You are an expert AI system responsible for generating structured synthetic data for function calling in an LLM model chat, where user information will be gathered directly by the LLM, eliminating the need to create functions for this purpose.  
@@ -22,10 +22,10 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
     - Each function must be **clear, unambiguous**, and represent a specific action or intent.  
     - Avoid redundancy by ensuring all functions are distinct and serve a unique purpose.  
     - Do not create trivial or overly generic functions such as `end_conversation`, `start_conversation`, or `additional_assistance`.  
-    - Avoid creating functions solely to gather user information; the LLM will handle this directly.  
-    - Include meaningful and specific parameters to enhance function utility.  
-    - Functions without parameters can be included if they retrieve static information or execute self-contained actions.  
     - Do not create functions solely for collecting user information, as this should be obtained directly through the chat.
+    - Include only meaningful and specific parameters to enhance function utility, only if required.  
+    - Avoid Redundant or Static Parameters:
+    - Do not add parameters that are simply used to retrieve static information or execute self-contained actions. For example, a function like get_registration_duration should not take parameters like user_id if the function always returns the same result (i.e., it doesn’t depend on external factors). 
 
 2. **Domain-Specific Context:**
     - Functions must capture all significant exchanges in the conversation.
@@ -47,7 +47,7 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
     - Set `additionalProperties` to `false` to prevent unspecified inputs.  
 
 6. **Output Structure:**  
-    - Use this JSON structure for each function:  
+    - Use this JSON structure for each function with parameters:  
       {
         "type": "function",
         "function": {
@@ -61,8 +61,23 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
                 "description": "<parameter description>",
                 "enum": ["<value1>", "<value2>", ...]  // Optional: Include only when necessary
               }
+              ...
             },
             "required": ["<parameter1>", "<parameter2>", ...],
+            "additionalProperties": false
+          }
+        }
+      }
+    - Use this JSON structure for auxiliary functions:  
+      {
+        "type": "function",
+        "function": {
+          "name": "<function_name>",
+          "description": "<brief description of the function's purpose>",
+          "parameters": {
+            "type": "object",
+            "properties": {} # Must be empty the properties
+            "required": [],
             "additionalProperties": false
           }
         }
@@ -82,7 +97,12 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
     - Ensure no significant intent or action is overlooked.
     - Only generate functions that require additional user input or actions that cannot be inferred automatically by the LLM.
 
-10. **Example Input:**
+10. **Auxiliary Functions**
+    - If a function requires specific information as a parameter, create an auxiliary function to gather the necessary data for those parameters. 
+    - Do not add any parameters to auxiliary functions, as these functions are solely intended for retrieving information from the database.
+    - Ensure these auxiliary functions are placed at the end of all other functions and are designed to provide users with options for the required parameters.
+
+11. **Example Input:**
     ```
     **Conversation**:
     agent: Bon dia! Com el/la puc ajudar?
@@ -99,7 +119,7 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
     Smart Home Automation (Lighting, Temperature, and Security Control)
     ```
 
-11. **Example Output:**
+12. **Example Output:**
 
 [
     {
@@ -128,6 +148,33 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
                 },
                 "required": ["song_name"],
                 "additionalProperties": false
+            }
+        }
+    },
+    ...
+    {
+          "type": "function",
+          "function": {
+            "name": "get_available_vehicles",
+            "description": "Provides a list of available vehicles for rental.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+        }
+    },
+    {
+          "type": "function",
+          "function": {
+            "name": "get_document_types",
+            "description": "Provides a list of available document types.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
             }
         }
     }
@@ -217,51 +264,72 @@ Your primary goal is to create realistic and logically coherent dialogues that s
 
 2. **Functions**: You will be provided with a list of functions that you need to call within the conversation.
 
-3. **Role Transitions**:
-   - After a message from the **user**, only the **agent** (gpt) can respond.
-   - After a message from the **agent**, the next message can be either from the **user** or a **tool**, depending on whether a function is invoked.
-   - After a message from the **tool**, the next response must come from the **agent** (gpt).
-   - **Consecutive messages** from the same role (e.g., user → user or agent → agent) are **not allowed**.
+
+3. **Role Transitions**  
+    - Following a **user** message, only the **agent** (GPT) is allowed to respond.  
+    - Following an **agent** message:  
+    - If the agent invokes a function, the next response must come from the corresponding **tool**.  
+    - If no function is invoked, the next response must come from the **user**.  
+    - Following a **tool** message, the next response must always come from the **agent** (GPT).  
+    - **Consecutive messages** from the same role (e.g., **user → user** or **agent → agent**) are strictly **prohibited**.  
 
 4. **Function Calls**:
-   - When the agent (gpt) needs to retrieve information or perform an action, it should invoke the appropriate function using a `<tool_call>` tag in its response.
+   - When the agent (gpt) needs to retrieve information or perform an action, it should invoke the appropriate function.
    - Function calls must specify the correct function name and parameters required for the action.
    - **Missing Parameters**: 
-      - If the user's message does not contain enough information to proceed with the function call, the agent must explicitly ask the user for the required details before proceeding with the function.
+      - If the user's message lacks sufficient information to proceed with the function call, the agent must explicitly request the required details from the user. If an available function can provide options for the missing parameter, invoke it to retrieve the information and present these options to the user, ensuring the tool's response is incorporated while asking for the necessary data..
       - Once the required information is provided, the agent can include it in the function call.
 
-5. **Structure**: The conversation must follow this structure for consistency:
+5. **Structure**: The conversation must follow this structure for consistency and must adhere strictly to the role transitions rules outlined in point 3.:
    - User's message: `{ "from": "human", "value": "..." }`
-   - Agent's message: `{ "from": "gpt", "value": "..."` (if applicable)
+   - Agent's message: `{ "from": "gpt", "value": "..."` (if applicable, Before requesting missing parameters from the user, check if a function is available to provide options for that parameter. If so, invoke the function, present the retrieved options to the user, and then request the necessary data, incorporating the available information from the tool response.)
    - User's message: `{ "from": "human", "value": "..." }` (if applicable)
    - Agent's message: `{ "from": "gpt", "value": "", tool_calls:[{...}]` (if applicable)
-   - Tool response: `{ "from": "tool", "value": {...}, }` (if applicable)
+   - Tool response: `{ "from": "tool", "value": {...}, }` (if applicable, and respond in clear and structured JSON format. The output must be actionable, precise, and written in English. Avoid any conversational or dialogue-style elements.)
    - Agent's message: `{ "from": "gpt", "value": "..." }` (if applicable)
 
 6. **LANGUAGE_TAG Language**: The entire conversation, including user messages and agent responses, must be in **LANGUAGE_TAG**. Tool responses could be either in English or **LANGUAGE_TAG**.
 
 7. **Tool Calls in Context**:  
     - Use tools only when necessary to retrieve data, perform actions, or clarify user requests.  
-    - Ensure tool responses are concise, result-oriented, and aligned with the tool’s purpose. They should provide structured and actionable data, not conversational or dialogue-style outputs. For example, a tool retrieving policies should return a comprehensive and well-organized list of policies, enabling the LLM to construct a clear and informative response for the user.
-    - Pass parameters to tools only if they are explicitly present in the user's input or derived from the context. If key information is missing, prompt the user to provide it before calling the tool.  
+    - Ensure tool responses are concise, purpose-driven, and focused on delivering results. They must provide structured, actionable data in English, avoiding any conversational or dialogue-style outputs.
+    - Pass parameters to tools only if they are explicitly present in the user's input or derived from the context. If key information is missing, prompt the user to provide it before calling the tool. If possible, gather all required parameters in a single interaction.  
     - The LLM must process tool outputs to craft responses that are clear, relevant, and actionable for the user. The final response should integrate insights from the tool with the LLM's contextual understanding, ensuring the user receives a natural and comprehensive answer based on the tool’s data.  
 
-8. **Realism**: Ensure the conversation feels natural and follows a realistic flow based on the topic provided by the user.
+8. **Realism**: Ensure the conversation feels natural and follows a realistic flow based on the user's topic. The order of information is important—some functions provide static information that the user may need to continue the conversation, so it's essential to present these details at the right time without overwhelming the user with unnecessary technicalities.
 
 9. **Formatting**: Present the entire conversation in properly formatted JSON, with clear and consistent indentation.
 
 10. **Missing Information Handling**: 
     - Before invoking a function, verify that all required parameters are present.
+    - If there is a function that provides static information that the user needs, invoke it first.    
     - If any parameter is missing:
-    - Prompt the user to provide the missing details in a natural and contextually appropriate way.
-    - Once the user responds with the necessary information, proceed with the function call.
+        - If auxiliary functions are available to provide details about missing parameters, invoke those functions to retrieve the necessary information before prompting the user for the required parameters.
+        - Prompt the user in a natural, contextually appropriate way to provide the missing details. If the information was retrieved by an auxiliary function, present the user with a list of available options for the parameter.
+        - Once the user responds with the necessary information, proceed with the function call.
+    - Ensure parameters are populated only with information explicitly provided by the user or retrieved through a tool call designed to supply data for that parameter. Avoid adding information arbitrarily.
 
 11. **Engagement**: The conversation must contain **at least 10 user questions** across the dialogue, ensuring active user engagement.
 
+12. **Avoid mentioning internal function names in responses**: Refrain from referencing function names during the conversation, as users do not need to be aware of the internal workings or technical details.
 
 **Example of the structure (only as a guide for the conversation, do not base your conversation on this directly):**
 ```json
 [
+    { "from": "human", "value": "I would like to schedule an appointment." },
+    { "from": "gpt", "value": "", "tool_calls": [{ "name": "get_appointment_types", "arguments": {} }] },
+    { "from": "tool", "value": { "get_appointment_types": ["dental", "check-up", "emergency", "consultation"] } },
+    { "from": "gpt", "value": "", "tool_calls": [{ "name": "get_locations", "arguments": {} }] },
+    { "from": "tool", "value": { "get_locations": ["Calle Molino 5, Barcelona", "Calle Carmen 10, Valencia", "any"] } },
+    { "from": "gpt", "value": "Please provide your preferred location and appointment type. Available locations are Calle Molino 5, Barcelona, Calle Carmen 10, Valencia, or 'any'. Available appointment types are dental, check-up, emergency, and consultation." },
+    { "from": "human", "value": "Any location and dental appointment." },
+    { "from": "gpt", "value": "", "tool_calls": [{ "name": "get_time_slots", "arguments": { "appointment_type": "dental", "location": "any" } }] },
+    { "from": "tool", "value": { "get_time_slots": ["morning", "afternoon", "evening"] } },
+    { "from": "gpt", "value": "Please choose a preferred time slot. Available options: morning, afternoon, or evening." },
+    { "from": "human", "value": "Afternoon." },
+    { "from": "gpt", "value": "", "tool_calls": [{ "name": "make_appointment", "arguments": { "type": "dental", "preferred_time": "afternoon", "location": "any" } }] },
+    { "from": "tool", "value": { "make_appointment": { "time": "11:00", "date": "12/03/2025", "location": "Calle Molino 5, Barcelona" }} },
+    { "from": "gpt", "value": "Your appointment has been successfully scheduled for 12/03/2025 at 11:00 AM at Calle Molino 5, Barcelona." }
     { "from": "human", "value": "Can you tell me the population of Tokyo?" },
     { "from": "gpt", "value": "", "tool_calls": [ { "arguments": { "query": "current population of Tokyo" }, "name": "browser_search" } ] },
     { "from": "tool", "value": {"browser_search": {"population": "approximately 14 million"}} },
@@ -383,9 +451,9 @@ def read_json(path):
             data = [json.loads(data) for data in file.readlines(file)]
             return data       
     
-def generate_response(messages, client):
+def generate_response(messages, client, model):
     chat_completion = client.chat.completions.create(
-                model="tgi",
+                model=model,
                 messages=messages,
                 stream=False,
                 max_tokens=4000,
@@ -399,7 +467,7 @@ def generate_response(messages, client):
 
 languages = ["Catalan", "Spanish", "English"]
 
-def generate_data_tools_and_conversation(id, topic, conversation, client):
+def generate_data_tools_and_conversation(id, topic, conversation, client, model):
     functions = None
     count = 0
     while (not functions):
@@ -409,7 +477,7 @@ def generate_data_tools_and_conversation(id, topic, conversation, client):
         count += 1
         messages = [{"role":"system", "content": SYSTEM_TOOLS}]
         messages.append({"role":"user", "content": USER_TOOLS.format(conversation=conversation, topic=topic)})
-        response = generate_response(messages=messages, client=client)
+        response = generate_response(messages=messages, client=client, model=model)
         try:
             functions = json.loads(response)
         except:
@@ -423,21 +491,24 @@ def generate_data_tools_and_conversation(id, topic, conversation, client):
         count += 1
         messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice(languages), SYSTEM_CONVERSATION)}]
         messages.append({"role":"user", "content": USER_CONVERSATION.format(topic=topic, functions=json.dumps(functions))})
-        response = generate_response(messages=messages, client=client)
+        response = generate_response(messages=messages, client=client, model=model)
         try:
             final_conversation = json.loads(response)
         except:
             print("\tError: generating conversation")
     return functions, final_conversation
-def progress_reporter(progress_tensor, data_path, stop_event):
+def progress_reporter(progress_tensor, data_path, stop_event, metadata_dir, output_path):
     """
     Thread function to print progress periodically.
     """
     total_rows = int(read_json(data_path)["stats"]["total"])
     total = (total_rows*10)
+    characters = ['#', '-']
+    index = 0
+    saved_percent = 0
     while not stop_event.is_set():
         total_progress = progress_tensor.sum().item()
-        progress_percentage = int(100 * total_progress / total)
+        progress_percentage = int(10000 * total_progress / total)/100
 
         # current_time = time.time()
         # time_took = round((current_time - initial_time)/60, 2)
@@ -445,14 +516,22 @@ def progress_reporter(progress_tensor, data_path, stop_event):
         
         bar_length = 50  # Length of the progress bar
         progress = int(progress_percentage / 2)  # Scale percentage to bar length
-        bar = "#" * progress + "-" * (bar_length - progress)
+        bar = "#" * progress + characters[index]+ "-" * (bar_length - progress - 1)
         # Print the progress bar
         print(f"[{bar}] {progress_percentage}%", end='\r')
+        index = (index + 1) % len(characters)
     
-        time.sleep(2)  # Print every second
+        time.sleep(0.5)  # Print every second
+        to_save = int(progress_percentage)
+        if to_save >= saved_percent + 1: 
+            parent_dir = os.path.dirname(output_path)
+            if parent_dir:  # Avoid trying to create directories for paths without parent directories
+                os.makedirs(parent_dir, exist_ok=True)
+            metadata_to_dataset(metadata_dir, output_path)
+            saved_percent = to_save
 
 
-def generate_data(rows, client, metadata_dir, progress_tensor, rank):
+def generate_data(rows, client, model, metadata_dir, progress_tensor, rank):
     for j, row in enumerate(rows):
         conversation = ""
         id = row["id"]
@@ -470,7 +549,7 @@ def generate_data(rows, client, metadata_dir, progress_tensor, rank):
         if not json_data.get("topics"):
             messages = [{"role":"system", "content": SYSTEM_TOPICS}]
             messages.append({"role":"user", "content": USER_TOPICS.format(conversation=json_data["conversation"])})
-            response = generate_response(messages=messages, client=client)
+            response = generate_response(messages=messages, client=client, model=model)
             topics = [topic.strip().strip("* ").strip("- ").strip(f"{i}. ") for i, topic in enumerate(response.split("\n")) if topic.strip()]
             json_data["topics"] = topics
             save_metadata(json_data=json_data, id=id, path=metadata_dir)
@@ -488,7 +567,7 @@ def generate_data(rows, client, metadata_dir, progress_tensor, rank):
 
         # No Concurrent
         for i, topic in enumerate(topics_to_process):
-            result = generate_data_tools_and_conversation(id, topic, conversation, client)
+            result = generate_data_tools_and_conversation(id, topic, conversation, client, model)
             if result:
                 tools, conversation = result  # Unpack the returned list
                 json_data["rows"][topic] = { "tools": tools, "conversation": conversation }
@@ -512,7 +591,7 @@ def generate_data(rows, client, metadata_dir, progress_tensor, rank):
         
         
 
-def process_chunk(input_path, client, metadata_dir, rank, world_size, progress_tensor):
+def process_chunk(input_path, client, model, metadata_dir, rank, world_size, progress_tensor):
     """
     Process a portion of the dataset based on the worker's rank using PyTorch distributed processing.
     Args:
@@ -534,25 +613,27 @@ def process_chunk(input_path, client, metadata_dir, rank, world_size, progress_t
     domains = domains[start_idx:end_idx]
 
     for domain in domains:
-        generate_data(rows=dataset["xats"][domain], client=client, metadata_dir=metadata_dir, progress_tensor=progress_tensor, rank=rank)
+        generate_data(rows=dataset["xats"][domain], client=client, model=model, metadata_dir=metadata_dir, progress_tensor=progress_tensor, rank=rank)
 
 
 def metadata_to_dataset(metadata_dir, output_path):
-    json_files = [f for f in os.listdir(META_DIRECTORY) if f.endswith('.json')]
+    json_files = [f for f in os.listdir(metadata_dir) if f.endswith('.json')]
     results = []
     for json_file in json_files:
         file_path = os.path.join(metadata_dir, json_file)
         with open(file_path, 'r') as f:
             data = json.load(f)
-            for topic, row in data["rows"].items():
-                results.append({"topic": topic, "tools": row["tools"], "conversation": row["conversation"]})
+            if "rows" in data:
+                for topic, row in data["rows"].items():
+                    results.append({"xitxat_id": data["id"], "topic": topic, "tools": row["tools"], "conversations": row["conversation"]})
 
 
-    with open(output_path, 'r') as f:
-        json.dump(results, f, indent=2)
+    final_res = check_data(results, mode="drop")
+    with open(output_path, 'w',  encoding='utf-8') as f:
+        json.dump(final_res, f, indent=2, ensure_ascii=False)
 
 
-def run(openi_api_url, api_token, output_path, metadata_dir, xitxat_data):
+def run(openi_api_url, api_token, model, output_path, metadata_dir, xitxat_data):
     # Initialize PyTorch distributed
     dist.init_process_group(backend="gloo")  # Or "gloo" for CPU-only
     
@@ -575,11 +656,11 @@ def run(openi_api_url, api_token, output_path, metadata_dir, xitxat_data):
     stop_event = threading.Event()
 
     if rank == 0:
-        progress_thread = threading.Thread(target=progress_reporter, args=(progress_tensor, xitxat_data, stop_event))
+        progress_thread = threading.Thread(target=progress_reporter, args=(progress_tensor, xitxat_data, stop_event, metadata_dir, output_path))
         progress_thread.start()
 
     # Call the process function for the current rank
-    process_chunk(xitxat_data, client, metadata_dir, rank, world_size, progress_tensor)
+    process_chunk(xitxat_data, client, model, metadata_dir, rank, world_size, progress_tensor)
 
     # Finalize distributed processing
     dist.barrier()
@@ -601,20 +682,22 @@ if __name__ == "__main__":
     parser.add_argument("--metadata_dir", type=str, default="./metadata", help="Path to metadata files.")
     parser.add_argument("--xitxat_data", type=str, help="Path to the XitXat data file.")
     parser.add_argument("--hf_token", type=str, default="hf_xxxx", help="Hugging Face authentication token.")
+    parser.add_argument("--model", type=str, default="tgi", help="Model from openai client.")
     parser.add_argument("--api_token", type=str, default=None, help="OpenAI api token.")
 
     args = parser.parse_args()
-
+    
     openi_api_url = args.openi_api_url
     output_path = args.output_path
     metadata_dir = args.metadata_dir
     xitxat_data = args.xitxat_data
     hf_token = args.hf_token
     api_token = args.api_token
+    model = args.model
     if not api_token:
         api_token = hf_token
     # Run the main function with parsed arguments
     
-    run(openi_api_url, api_token, output_path, metadata_dir, xitxat_data)
+    run(openi_api_url, api_token, model, output_path, metadata_dir, xitxat_data)
 
 

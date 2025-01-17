@@ -2,4 +2,7 @@
 venv
 data/tmp.json
 **/__pycache__
-metadata
+metadata*
+output.json
+test2.py
+generate_data/rag_to_tool
