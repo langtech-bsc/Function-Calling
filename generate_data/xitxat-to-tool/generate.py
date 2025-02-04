@@ -232,7 +232,7 @@ agent: Bon dia! Com el/la puc ajudar?
 
 
 **Example Topics (for reference only, do not directly generate from these):**
-```
+
     Spotify (Music Recommendations and Playback Control)
     Smart Home Automation (Lighting, Temperature, and Security Control)
     E-commerce (Product Recommendations and Order Tracking)
@@ -243,7 +243,6 @@ agent: Bon dia! Com el/la puc ajudar?
     Learning and Education (Personalized Learning Paths and Assessments)
     News and Media (Real-time News Updates and Summaries)
     Social Media (Post Creation, Scheduling, and Notifications)
-``` 
 
 Generate 10 topics based on the provided conversation that meet the above requirements, considering the domain and extending beyond the conversation to related real-world scenarios.
 Ensure that each topic corresponds to a **unique domain**.
@@ -313,6 +312,8 @@ Your primary goal is to create realistic and logically coherent dialogues that s
 
 12. **Avoid mentioning internal function names in responses**: Refrain from referencing function names during the conversation, as users do not need to be aware of the internal workings or technical details.
 
+13. **Out of Scope**: Include at least two out-of-scope user requests where the agent responds appropriately, indicating that no available function can handle the task.
+
 **Example of the structure (only as a guide for the conversation, do not base your conversation on this directly):**
 ```json
 [
@@ -330,6 +331,8 @@ Your primary goal is to create realistic and logically coherent dialogues that s
     { "from": "gpt", "value": "", "tool_calls": [{ "name": "make_appointment", "arguments": { "type": "dental", "preferred_time": "afternoon", "location": "any" } }] },
     { "from": "tool", "value": { "make_appointment": { "time": "11:00", "date": "12/03/2025", "location": "Calle Molino 5, Barcelona" }} },
     { "from": "gpt", "value": "Your appointment has been successfully scheduled for 12/03/2025 at 11:00 AM at Calle Molino 5, Barcelona." }
+    { "from": "human", "value": "Can I borrow a spaceship for the weekend? I'm planning to visit Mars and check out the Olympus Mons up close. It's a bit of an unusual request, but I thought I'd ask anyway!"},
+    { "from": "gpt", "value": "Apologies, but I'm unable to assist with that request. Unfortunately, there is no available function or resource to accommodate your spaceship rental needs."}
     { "from": "human", "value": "Can you tell me the population of Tokyo?" },
     { "from": "gpt", "value": "", "tool_calls": [ { "arguments": { "query": "current population of Tokyo" }, "name": "browser_search" } ] },
     { "from": "tool", "value": {"browser_search": {"population": "approximately 14 million"}} },
@@ -372,7 +375,7 @@ Your primary goal is to create realistic and logically coherent dialogues that s
     { "from": "gpt", "value": "Yes, you can book tickets for Tokyo Tower online at [Tokyo Tower's official website](https://tokyotower.jp)." }
 ]
 
-Return **only** JSON adn must be complete. Do not include explanations, feedback, or any additional text, not even code block (```json).
+Return **only** JSON and must be complete. Do not include explanations, feedback, or any additional text, not even code block (```json).
 """
 
 USER_CONVERSATION = """"
@@ -383,26 +386,354 @@ USER_CONVERSATION = """"
 ```
 """
 
-FIX_JSON_SYSTEM = """
-You are an advanced AI system tasked with repairing and optimizing broken JSON data. Below, you will find a faulty JSON structure containing errors in formatting, structure, or content.
+functions = [
+        {
+          "type": "function",
+          "function": {
+            "name": "get_insurance_options",
+            "description": "Retrieves a list of insurance options for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "compare_insurance_plans",
+            "description": "Compares two insurance plans for non-aquatic electronics based on coverage, premium, and deductible.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_a": {
+                  "type": "string",
+                  "description": "The name of the first insurance plan."
+                },
+                "plan_b": {
+                  "type": "string",
+                  "description": "The name of the second insurance plan."
+                }
+              },
+              "required": [
+                "plan_a",
+                "plan_b"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_coverage",
+            "description": "Retrieves the coverage details of a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_discounts",
+            "description": "Retrieves the available discounts for a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_claim_process",
+            "description": "Retrieves the claim process for a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_rating",
+            "description": "Retrieves the rating of a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_financial_strength",
+            "description": "Retrieves the financial strength rating of the company behind a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_complaints",
+            "description": "Retrieves the number of complaints filed against a specific insurance plan for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "plan_name": {
+                  "type": "string",
+                  "description": "The name of the insurance plan."
+                }
+              },
+              "required": [
+                "plan_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_plan_recommendations",
+            "description": "Retrieves recommended insurance plans for non-aquatic electronics based on user needs and preferences.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "user_needs": {
+                  "type": "array",
+                  "description": "The user's insurance needs.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user_preferences": {
+                  "type": "array",
+                  "description": "The user's insurance preferences.",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "user_needs",
+                "user_preferences"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_insurance_policy_options",
+            "description": "Retrieves a list of insurance policy options for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_coverage",
+            "description": "Retrieves the coverage details of a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_discounts",
+            "description": "Retrieves the available discounts for a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_claim_process",
+            "description": "Retrieves the claim process for a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_rating",
+            "description": "Retrieves the rating of a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_financial_strength",
+            "description": "Retrieves the financial strength rating of the company behind a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "get_policy_complaints",
+            "description": "Retrieves the number of complaints filed against a specific insurance policy for non-aquatic electronics.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "policy_name": {
+                  "type": "string",
+                  "description": "The name of the insurance policy."
+                }
+              },
+              "required": [
+                "policy_name"
+              ],
+              "additionalProperties": False
+            }
+          }
+        }
+      ]
 
-### Your Objectives:
-1. **Correct Errors**: Fix all syntax, formatting, and structural issues to ensure the JSON is valid.
-2. **Logical Coherence**: Analyze the content to maintain logical consistency and integrity. If any keys or values appear incomplete or misplaced, reorganize them appropriately.
-3. **Completeness**: Check for missing fields or incomplete data. If applicable:
-   - Remove the last row if the list is incomplete or inconsistent.
-   - Ensure all remaining entries form a coherent and valid JSON structure.
-4. **Enhance Structure**: Improve formatting, organization, and any logical inconsistencies while preserving the data’s intent.
+messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice("catalám"), SYSTEM_CONVERSATION)}]
+messages.append({"role":"user", "content": USER_CONVERSATION.format(topic="Insurance for Non-Aquatic Electronics", functions=json.dumps(functions))})
 
-Return **only** the corrected and improved JSON. Do not include explanations, feedback, or any additional text.
+
+SYSTEM_SYSTEM_PROMPT = """You are an AI specialized in creating context-aware system prompts. Your task is to generate a clear and concise prompt that defines the model's role based on the context of the conversation, while providing guidance for responding appropriately to user inquiries. The prompt should ensure the model stays on topic, addresses off-topic queries respectfully, and remains focused on the conversation’s objectives, without including technical details or function-specific language. The generated prompt must be in **LANGUAGE_TAG**.
+
+Start the prompt with phrases such as:
+- "You are an assistant specialized in..."
+- "Your role is to assist with..."
+- "Your primary task is to provide support in..."
+- "As a conversational agent, your role is to guide the conversation toward..."
+- "You are tasked with ensuring the conversation remains focused on..."
+
+Return only the generated system prompt, without any extra labels or unnecessary information such as "System Prompt:".
 """
 
-FIX_JSON_USER = """
-Broken JSON:
+USER_SYSTEM_PROMPT = """
+Conversation:
 ```
-{data}
+{conversation}
 ```
-Return **only** the corrected and improved JSON. Do not include explanations, feedback, or any additional text.
+
+Return only the generated system prompt and do not include any extra labels or unnecessary parts like "System Prompt:".
 """
 
 
@@ -452,17 +783,29 @@ def read_json(path):
             return data       
     
 def generate_response(messages, client, model):
+    print("Chat completions...")
     chat_completion = client.chat.completions.create(
                 model=model,
                 messages=messages,
                 stream=False,
-                max_tokens=4000,
+                max_tokens=6000,
                 temperature=0.4,
                 extra_body={
                 }
             )
     
+    # text = ""
+    # for c in chat_completion:
+    #   text += c.choices[0].delta.content
+    #   print(text)
     response = chat_completion.choices[0].message.content
+    print("==============")
+    print(response)
+    if "</think>" in response:
+        response = response.split("</think>")[-1].strip('"```"').strip('```').strip()
+    print("______________")
+    print(response)
+    print("==============")
     return response
 
 languages = ["Catalan", "Spanish", "English"]
@@ -496,6 +839,11 @@ def generate_data_tools_and_conversation(id, topic, conversation, client, model)
             final_conversation = json.loads(response)
         except:
             print("\tError: generating conversation")
+
+    messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice(languages), SYSTEM_SYSTEM_PROMPT)}]
+    messages.append({"role":"user", "content": USER_SYSTEM_PROMPT.format(conversation=final_conversation)})
+    response = generate_response(messages=messages, client=client, model=model)
+    final_conversation.insert(0, {"from":"system", "value": response.strip()})
     return functions, final_conversation
 def progress_reporter(progress_tensor, data_path, stop_event, metadata_dir, output_path):
     """
@@ -559,6 +907,24 @@ def generate_data(rows, client, model, metadata_dir, progress_tensor, rank):
            json_data["rows"] = {}
 
         topics_to_process = [topic for topic in json_data["topics"] if not json_data["rows"].get(topic)]
+        topics_processed = [topic for topic in json_data["topics"] if json_data["rows"].get(topic)]
+
+        for topic in topics_processed:
+            conv = json_data["rows"][topic]["conversation"]
+            if conv[0]["from"] != "system":
+                messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice(languages), SYSTEM_SYSTEM_PROMPT)}]
+                messages.append({"role":"user", "content": USER_SYSTEM_PROMPT.format(conversation=conv)})
+                response = generate_response(messages=messages, client=client, model=model)
+                conv.insert(0, {"from":"system", "value": response.strip().strip('"')})
+                if conv[0].get("content"):
+                    conv[0]["value"] = conv[0]["content"]
+                    conv[0].pop("content")
+                json_data["rows"][topic]["conversation"] = conv
+                print(response.strip().strip('"'))
+            # elif conv[1]["from"] == "system":
+            #     json_data["rows"][topic]["conversation"].pop(1)
+        
+        save_metadata(json_data=json_data, id=id, path=metadata_dir)
         if len(topics_to_process) == 0:
             print("Skiping due to already exists:\t", id)
             progress_tensor[rank] = j * 10 + (10 - len(topics_to_process))
@@ -625,7 +991,14 @@ def metadata_to_dataset(metadata_dir, output_path):
             data = json.load(f)
             if "rows" in data:
                 for topic, row in data["rows"].items():
-                    results.append({"xitxat_id": data["id"], "topic": topic, "tools": row["tools"], "conversations": row["conversation"]})
+                    conv = row["conversation"]
+                    to_delete = []
+                    for i in range(1, len(conv)):
+                        if conv[i]["from"] == "gpt" and conv[i-1]["from"] == "gpt" and conv[i].get("tool_calls") and conv[i]["value"] == "":
+                            to_delete.append(i-1)
+                            conv[i]["value"] = conv[i-1]["value"]
+                    conv = [c for i, c in enumerate(conv) if i not in to_delete]
+                    results.append({"xitxat_id": data["id"], "topic": topic, "tools": row["tools"], "conversations": conv})
 
 
     final_res = check_data(results, mode="drop")

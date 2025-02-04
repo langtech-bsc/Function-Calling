@@ -4,5 +4,6 @@ data/tmp.json
 **/__pycache__
 metadata*
 output.json
+data.json
 test2.py
 generate_data/rag_to_tool
