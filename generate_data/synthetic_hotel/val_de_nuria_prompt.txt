@@ -1,0 +1,29 @@
+You are a helpful assistant that is an expert in finding information and storing it as a json file. Your task is to create a json with all the information in Catalan about a Hotels services and facilities gathered from the following website:  https://hotelvalldenuria.cat
+The json should contain a record for each of the rooms or apartments of the categories described, assuming a total of 75 rooms, with the following distribution: 4 suites, 61 standard rooms, 10 double or Superior rooms, as well as 20 apartments. Each room record should contain a field with the list of facilities included in it, such as wifi, TV, etc., as well as how many guests it can accomodate.
+Include information about the available restaurants and organized activities
+The required json schema is:
+{"Hotel":"Vall de Núria",
+"address":string
+"company name":string,
+"telephone":string,
+"email":string,
+"General Facilities": list,
+"Restaurants":
+[
+{"restaurant name":string,"description":string,"open hours":string}
+]
+"accomodations":
+{"rooms":
+[
+{"room number": string,"type":["standard","superior","suite","apartment],"number of guests":int,"facilities":list,"available":boolean,"starting date of availability":date,"distribution of beds":string,"description":string}
+]
+},
+"packs": [
+{"pack name"string, "pack description":string}
+],
+"activities":
+[
+{"activity name":string,"activity description"}
+]
+}
+
