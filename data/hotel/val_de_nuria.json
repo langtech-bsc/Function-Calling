@@ -4,7 +4,7 @@
   "company name": "Nou Vall de Núria, S.A.",
   "telephone": "+34 972 73 20 20",
   "email": "info@hotelvalldenuria.cat",
-  "General Facilities": [
+  "general_facilities": [
     "Wi-Fi gratuït",
     "Piscina exterior",
     "Sala de gimnàs",
@@ -12,14 +12,14 @@
     "Servei de lavanderia",
     "Servei de recepció 24 hores"
   ],
-  "Restaurants": [
+  "restaurants": [
     {
-      "restaurant name": "Restaurant Nou Vall de Núria",
+      "name": "Restaurant Nou Vall de Núria",
       "description": "Ofereix una cuina catalana tradicional amb productes locals",
       "open hours": "De 8:00 a 22:00 hores"
     },
     {
-      "restaurant name": "Bar del Hotel",
+      "name": "Bar del Hotel",
       "description": "Ofereix begudes i aperitius",
       "open hours": "De 10:00 a 23:00 hores"
     }
@@ -27,9 +27,9 @@
   "accomodations": {
     "rooms": [
       {
-        "room number": "1",
+        "room_number": "1",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -38,9 +38,9 @@
         "price": 80
       },
       {
-        "room number": "2",
+        "room_number": "2",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -49,9 +49,9 @@
         "price": 80
       },
       {
-        "room number": "3",
+        "room_number": "3",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -60,9 +60,9 @@
         "price": 80
       },
       {
-        "room number": "4",
+        "room_number": "4",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -71,9 +71,9 @@
         "price": 80
       },
       {
-        "room number": "5",
+        "room_number": "5",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -82,9 +82,9 @@
         "price": 80
       },
       {
-        "room number": "6",
+        "room_number": "6",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -93,9 +93,9 @@
         "price": 80
       },
       {
-        "room number": "7",
+        "room_number": "7",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -104,9 +104,9 @@
         "price": 80
       },
       {
-        "room number": "8",
+        "room_number": "8",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -115,9 +115,9 @@
         "price": 80
       },
       {
-        "room number": "9",
+        "room_number": "9",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -126,9 +126,9 @@
         "price": 80
       },
       {
-        "room number": "10",
+        "room_number": "10",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -137,9 +137,9 @@
         "price": 80
       },
       {
-        "room number": "11",
+        "room_number": "11",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -148,9 +148,9 @@
         "price": 80
       },
       {
-        "room number": "12",
+        "room_number": "12",
         "type": ["standard"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -159,9 +159,9 @@
         "price": 80
       },
       {
-        "room number": "13",
+        "room_number": "13",
         "type": ["superior"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -170,9 +170,9 @@
         "price": 120
       },
       {
-        "room number": "14",
+        "room_number": "14",
         "type": ["superior"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -181,9 +181,9 @@
         "price": 120
       },
       {
-        "room number": "15",
+        "room_number": "15",
         "type": ["superior"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -192,9 +192,9 @@
         "price": 120
       },
       {
-        "room number": "16",
+        "room_number": "16",
         "type": ["superior"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -203,9 +203,9 @@
         "price": 120
       },
       {
-        "room number": "17",
-        "type": ["superior"], 
-        "number of guests": 2,
+        "room_number": "17",
+        "type": ["superior"],
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -214,9 +214,9 @@
         "price": 120
       },
       {
-        "room number": "18",
+        "room_number": "18",
         "type": ["suite"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -225,9 +225,9 @@
         "price": 200
       },
       {
-        "room number": "19",
+        "room_number": "19",
         "type": ["suite"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -236,9 +236,9 @@
         "price": 200
       },
       {
-        "room number": "20",
+        "room_number": "20",
         "type": ["suite"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -247,9 +247,9 @@
         "price": 200
       },
       {
-        "room number": "21",
+        "room_number": "21",
         "type": ["suite"],
-        "number of guests": 2,
+        "number_of_guests": 2,
         "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -258,9 +258,9 @@
         "price": 200
       },
       {
-        "room number": "22",
+        "room_number": "22",
         "type": ["apartment"],
-        "number of guests": 4,
+        "number_of_guests": 4,
         "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -269,9 +269,9 @@
         "price": 350
       },
       {
-        "room number": "23",
+        "room_number": "23",
         "type": ["apartment"],
-        "number of guests": 4,
+        "number_of_guests": 4,
         "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -280,9 +280,9 @@
         "price": 350
       },
       {
-        "room number": "24",
+        "room_number": "24",
         "type": ["apartment"],
-        "number of guests": 4,
+        "number_of_guests": 4,
         "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -291,9 +291,9 @@
         "price": 350
       },
       {
-        "room number": "25",
+        "room_number": "25",
         "type": ["apartment"],
-        "number of guests": 4,
+        "number_of_guests": 4,
         "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
         "available": true,
         "starting date of availability": "2024-03-01",
@@ -303,11 +303,37 @@
       }
     ]
   },
-  "nightly accomodation prices": {
+  "nightly_accomodation_prices": {
     "standard": 80,
     "superior": 120,
     "suite": 200,
     "apartment": 350
+  },
+  "room_types": {
+    "standard": {
+      "number_of_guests": 2,
+      "facilities": ["Wi-Fi", "TV", "bany privat"],
+      "distribution of beds": "1 llit doble",
+      "price": 80
+    },
+    "superior": {
+      "facilities": ["Wi-Fi", "TV", "bany privat", "balcon"],
+      "distribution of beds": "1 llit doble",
+      "description": "Habitació superior amb vista al jardí",
+      "price": 120
+    },
+    "suite": {
+      "number_of_guests": 2,
+      "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
+      "distribution of beds": "1 llit doble",
+      "price": 200
+    },
+    "apartment": {
+      "number_of_guests": 4,
+      "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
+      "distribution of beds": "2 llits individuals",
+      "price": 350
+    }
   },
   "packs": [
      {

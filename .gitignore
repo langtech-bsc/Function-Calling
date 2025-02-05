@@ -1,5 +1,5 @@
 .env
-venv
+**/venv
 data/tmp.json
 **/__pycache__
 metadata*
