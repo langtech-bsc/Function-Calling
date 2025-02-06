@@ -182,7 +182,7 @@ Your primary goal is to analyze a given topic and create a set of **10 to 20 dis
 
 Generate 10 to 20 unique functions based solely on the provided topic. The example conversation is included only to demonstrate the flow of dialogue and should not influence the function generation process.
 
-Return **only** JSON adn must be complete. Do not include explanations, feedback, or any additional text, not even code block (```json)..
+**Warning**: Return **only** JSON, must be **complete** and **correct**. Do not include explanations, feedback, or any additional text, not even code block (```json)..
 """
 
 USER_TOOLS = """
@@ -386,335 +386,6 @@ USER_CONVERSATION = """"
 ```
 """
 
-functions = [
-        {
-          "type": "function",
-          "function": {
-            "name": "get_insurance_options",
-            "description": "Retrieves a list of insurance options for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {},
-              "required": [],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "compare_insurance_plans",
-            "description": "Compares two insurance plans for non-aquatic electronics based on coverage, premium, and deductible.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_a": {
-                  "type": "string",
-                  "description": "The name of the first insurance plan."
-                },
-                "plan_b": {
-                  "type": "string",
-                  "description": "The name of the second insurance plan."
-                }
-              },
-              "required": [
-                "plan_a",
-                "plan_b"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_coverage",
-            "description": "Retrieves the coverage details of a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_discounts",
-            "description": "Retrieves the available discounts for a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_claim_process",
-            "description": "Retrieves the claim process for a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_rating",
-            "description": "Retrieves the rating of a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_financial_strength",
-            "description": "Retrieves the financial strength rating of the company behind a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_complaints",
-            "description": "Retrieves the number of complaints filed against a specific insurance plan for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "plan_name": {
-                  "type": "string",
-                  "description": "The name of the insurance plan."
-                }
-              },
-              "required": [
-                "plan_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_plan_recommendations",
-            "description": "Retrieves recommended insurance plans for non-aquatic electronics based on user needs and preferences.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "user_needs": {
-                  "type": "array",
-                  "description": "The user's insurance needs.",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "user_preferences": {
-                  "type": "array",
-                  "description": "The user's insurance preferences.",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "user_needs",
-                "user_preferences"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_insurance_policy_options",
-            "description": "Retrieves a list of insurance policy options for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {},
-              "required": [],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_coverage",
-            "description": "Retrieves the coverage details of a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_discounts",
-            "description": "Retrieves the available discounts for a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_claim_process",
-            "description": "Retrieves the claim process for a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_rating",
-            "description": "Retrieves the rating of a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_financial_strength",
-            "description": "Retrieves the financial strength rating of the company behind a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        },
-        {
-          "type": "function",
-          "function": {
-            "name": "get_policy_complaints",
-            "description": "Retrieves the number of complaints filed against a specific insurance policy for non-aquatic electronics.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "policy_name": {
-                  "type": "string",
-                  "description": "The name of the insurance policy."
-                }
-              },
-              "required": [
-                "policy_name"
-              ],
-              "additionalProperties": False
-            }
-          }
-        }
-      ]
-
-messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice("catalám"), SYSTEM_CONVERSATION)}]
-messages.append({"role":"user", "content": USER_CONVERSATION.format(topic="Insurance for Non-Aquatic Electronics", functions=json.dumps(functions))})
-
-
 SYSTEM_SYSTEM_PROMPT = """You are an AI specialized in creating context-aware system prompts. Your task is to generate a clear and concise prompt that defines the model's role based on the context of the conversation, while providing guidance for responding appropriately to user inquiries. The prompt should ensure the model stays on topic, addresses off-topic queries respectfully, and remains focused on the conversation’s objectives, without including technical details or function-specific language. The generated prompt must be in **LANGUAGE_TAG**.
 
 Start the prompt with phrases such as:
@@ -799,13 +470,13 @@ def generate_response(messages, client, model):
     #   text += c.choices[0].delta.content
     #   print(text)
     response = chat_completion.choices[0].message.content
-    print("==============")
-    print(response)
-    if "</think>" in response:
-        response = response.split("</think>")[-1].strip('"```"').strip('```').strip()
-    print("______________")
-    print(response)
-    print("==============")
+    # print("==============")
+    # print(response)
+    # if "</think>" in response:
+    #     response = response.split("</think>")[-1].strip('"```"').strip('```').strip()
+    # print("______________")
+    # print(response)
+    # print("==============")
     return response
 
 languages = ["Catalan", "Spanish", "English"]
@@ -825,6 +496,7 @@ def generate_data_tools_and_conversation(id, topic, conversation, client, model)
             functions = json.loads(response)
         except:
             print("\tError: generating functions")
+            print(response)
 
     final_conversation = None
     count = 0
@@ -920,9 +592,9 @@ def generate_data(rows, client, model, metadata_dir, progress_tensor, rank):
                     conv[0]["value"] = conv[0]["content"]
                     conv[0].pop("content")
                 json_data["rows"][topic]["conversation"] = conv
-                print(response.strip().strip('"'))
-            # elif conv[1]["from"] == "system":
-            #     json_data["rows"][topic]["conversation"].pop(1)
+                
+            if not json_data["rows"][topic].get("model", None):
+                json_data["rows"][topic]["model"] = model
         
         save_metadata(json_data=json_data, id=id, path=metadata_dir)
         if len(topics_to_process) == 0:
@@ -936,7 +608,7 @@ def generate_data(rows, client, model, metadata_dir, progress_tensor, rank):
             result = generate_data_tools_and_conversation(id, topic, conversation, client, model)
             if result:
                 tools, conversation = result  # Unpack the returned list
-                json_data["rows"][topic] = { "tools": tools, "conversation": conversation }
+                json_data["rows"][topic] = { "tools": tools, "conversation": conversation, "model": model }
                 save_metadata(json_data=json_data, id=id, path=metadata_dir)
             
             progress_tensor[rank] = j * 10 + (10 - len(topics_to_process) + i+1)
@@ -954,8 +626,6 @@ def generate_data(rows, client, model, metadata_dir, progress_tensor, rank):
         #     tools, conversation = result  # Unpack the returned list
         #     json_data["rows"][topic] = { "tools": tools, "conversation": conversation }
 
-        
-        
 
 def process_chunk(input_path, client, model, metadata_dir, rank, world_size, progress_tensor):
     """
@@ -998,7 +668,7 @@ def metadata_to_dataset(metadata_dir, output_path):
                             to_delete.append(i-1)
                             conv[i]["value"] = conv[i-1]["value"]
                     conv = [c for i, c in enumerate(conv) if i not in to_delete]
-                    results.append({"xitxat_id": data["id"], "topic": topic, "tools": row["tools"], "conversations": conv})
+                    results.append({"xitxat_id": data["id"], "topic": topic, "tools": row["tools"], "conversations": conv, "model":row["model"]})
 
 
     final_res = check_data(results, mode="drop")
@@ -1055,7 +725,7 @@ if __name__ == "__main__":
     parser.add_argument("--metadata_dir", type=str, default="./metadata", help="Path to metadata files.")
     parser.add_argument("--xitxat_data", type=str, help="Path to the XitXat data file.")
     parser.add_argument("--hf_token", type=str, default="hf_xxxx", help="Hugging Face authentication token.")
-    parser.add_argument("--model", type=str, default="tgi", help="Model from openai client.")
+    parser.add_argument("--model", type=str, default="Mixtral-8x22B-Instruct-v0.1", help="Model from openai client.")
     parser.add_argument("--api_token", type=str, default=None, help="OpenAI api token.")
 
     args = parser.parse_args()

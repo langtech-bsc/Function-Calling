@@ -10,8 +10,7 @@ load_dotenv(".env")
 HF_TOKEN = os.environ["HF_TOKEN"]
 BASE_URL = os.environ["BASE_URL"]
 
-SYSTEM_PROMPT_TEMPLATE = """
-You are an AI assistant designed to assist users with a hotel booking and information system. Your role is to provide detailed and accurate information about the hotel, including available accommodations, facilities, dining options, and reservation services. You can check room availability, assist with bookings, modify or cancel reservations, and answer general inquiries about the hotel.  
+SYSTEM_PROMPT_TEMPLATE = """You are an AI assistant designed to assist users with a hotel booking and information system. Your role is to provide detailed and accurate information about the hotel, including available accommodations, facilities, dining options, and reservation services. You can check room availability, assist with bookings, modify or cancel reservations, and answer general inquiries about the hotel.  
 
 Maintain clarity, conciseness, and relevance in your responses, ensuring a seamless user experience. Always respond in the same **language as the user’s query** to preserve their preferred language.
 """
@@ -22,8 +21,7 @@ client = OpenAI(
     )
 
 
-def complation(history, model, tools=None):
-    system_prompt = SYSTEM_PROMPT_TEMPLATE
+def complation(history, model, system_prompt, tools=None):
     messages = [{"role": "system", "content": system_prompt}]
     for msg in history:
         if type(msg) == dict:
@@ -66,6 +64,7 @@ def complation(history, model, tools=None):
 def respond(
     message:any,
     history:any,
+    additional_inputs,
 ):
     try:   
         models = client.models.list()
@@ -83,7 +82,7 @@ def respond(
             content=message,
         )
     )
-    completion = complation(history=history,  tools=oitools, model=model)
+    completion = complation(history=history,  tools=oitools, model=model, system_prompt=additional_inputs)
     appended = False
     for chunk in completion:
         if len(chunk.choices) > 0 and chunk.choices[0].delta.tool_calls and len(chunk.choices[0].delta.tool_calls) > 0 :
@@ -119,13 +118,13 @@ def respond(
                 ChatMessage(
                     role="assistant",
                     content=result,
-                    metadata= {"title": f"🛠️ Used tool '{name}'"},
+                    metadata= {"title": f"🛠️ Used tool '{name}', arguments: {json.dumps(json_arguments, ensure_ascii=False)}"},
                     options=[{"label":"tool_calls", "value": json.dumps([{"id": "call_FthC9qRpsL5kBpwwyw6c7j4k","function": {"arguments": arguments,"name": name},"type": "function"}])}]
                 )
             )
         yield history[-1]
 
-        completion = complation(history=history, tools=oitools, model=model)
+        completion = complation(history=history, tools=oitools, model=model, system_prompt=additional_inputs)
         result = ""
         appended = False
         for chunk in completion:
@@ -146,5 +145,6 @@ def respond(
 For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
 """
 if __name__ == "__main__":
-    demo = gr.ChatInterface(respond, type="messages")
+    system_prompt = gr.Textbox(label="System propmt", value=SYSTEM_PROMPT_TEMPLATE, lines=3)
+    demo = gr.ChatInterface(respond, type="messages", additional_inputs=[system_prompt])
     demo.launch()
