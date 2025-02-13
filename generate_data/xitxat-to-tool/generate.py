@@ -454,7 +454,6 @@ def read_json(path):
             return data       
     
 def generate_response(messages, client, model):
-    print("Chat completions...")
     chat_completion = client.chat.completions.create(
                 model=model,
                 messages=messages,
@@ -496,7 +495,7 @@ def generate_data_tools_and_conversation(id, topic, conversation, client, model)
             functions = json.loads(response)
         except:
             print("\tError: generating functions")
-            print(response)
+            # print(response)
 
     final_conversation = None
     count = 0
@@ -510,7 +509,7 @@ def generate_data_tools_and_conversation(id, topic, conversation, client, model)
         try:
             final_conversation = json.loads(response)
         except:
-            print("\tError: generating conversation")
+            print("Error: generating conversation")
 
     messages = [{"role":"system", "content": re.sub(r'LANGUAGE_TAG', random.choice(languages), SYSTEM_SYSTEM_PROMPT)}]
     messages.append({"role":"user", "content": USER_SYSTEM_PROMPT.format(conversation=final_conversation)})

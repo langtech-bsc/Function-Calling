@@ -20,7 +20,7 @@ def read_json(data_path: str) -> tuple[list, dict]:
             data = json.loads(f.read())
     return data
 
-json_data = read_json("/home/arana/Documents/langtech/Function-Calling/data/hotel/val_de_nuria.json")
+json_data = read_json("data/val_de_nuria.json")
 reservations = {}
 class ToolBase(BaseModel, ABC):
     @abstractmethod
@@ -83,23 +83,19 @@ def tool_register(cls: BaseModel):
     tools[oaitool["function"]["name"]] = cls
 
 @tool_register
-class get_hotel_information(ToolBase):
+class hotel_information(ToolBase):
     """Retrieves basic information about the hotel, such as its name, address, contact details, and overall description."""
 
     @classmethod
     def invoke(cls, input: Dict) -> str: 
         return """### **Nou Vall de Núria – Brief Description**  
-
 Nestled in the stunning **Vall de Núria** in the Pyrenees, **Nou Vall de Núria** offers a perfect blend of comfort and adventure. Guests can enjoy breathtaking mountain views, premium accommodations, and excellent facilities, including an outdoor pool, gym, and sauna.  
-
 The hotel features **two dining options**, serving traditional Catalan cuisine and refreshing drinks. Accommodations range from **cozy standard rooms to luxurious suites and fully equipped apartments**, catering to couples, families, and groups.  
-
 For an unforgettable stay, guests can choose from **special packages**, including family-friendly stays, romantic getaways, ski adventures, and relaxation retreats. Outdoor enthusiasts can explore **hiking trails, ski slopes, and fishing spots** in the surrounding natural beauty.  
-
 Whether for relaxation or adventure, **Nou Vall de Núria** promises a unique and memorable experience.""" 
 
 @tool_register
-class get_hotel_facilities(ToolBase):
+class hotel_facilities(ToolBase):
     """Provides a list of available general facilities at the hotel, which could include amenities like a spa, pool, gym, conference rooms, etc."""
 
     @classmethod
@@ -107,7 +103,7 @@ class get_hotel_facilities(ToolBase):
         return json_data["general_facilities"]
 
 @tool_register
-class get_restaurants_info(ToolBase):
+class restaurants_info(ToolBase):
     """Provides a list of available restaurants with their information."""
 
     @classmethod
@@ -120,7 +116,7 @@ class get_restaurants_info(ToolBase):
     
 
 # @tool_register
-# class get_restaurant_details(ToolBase):
+# class restaurant_details(ToolBase):
 #     """Retrieves detailed information about a specific restaurant in the hotel, including its menu, ambiance, operating hours, and special features."""
 
 #     name: str = Field(default=[res["name"] for res in json_data["restaurants"]], description="Name of the resaturant")
@@ -142,7 +138,7 @@ class get_restaurants_info(ToolBase):
 
 
 @tool_register
-class get_room_types(ToolBase):
+class room_types(ToolBase):
     """
     Returns a list of room types available at the hotel (e.g., single, double, suite, deluxe) along with brief descriptions of each type.
     """
@@ -163,13 +159,33 @@ class check_room_availability(ToolBase):
     
     @classmethod
     def invoke(cls, input: Dict) -> str: 
+        
+        room_type = input.get("room_type", None)
+        check_in_date = input.get("check_in_date", None)
+        check_out_date = input.get("check_out_date", None)
+        guests = input.get("guests", None)
+
+        missing = []
+        if not room_type:
+            missing.append("room_type")
+        if not check_in_date:
+            missing.append("check_in_date")
+        if not check_out_date:
+            missing.append("check_out_date")
+        if not guests:
+            missing.append("guests")
+
+        if len(missing):
+            value = ", ".join(missing)
+            return f"Unable to check the room availability. The following required arguments are missing:{value}." 
 
         instance = cls(**input)
         room_type = instance.room_type
         check_in_date = instance.check_in_date
-        check_in_date = instance.check_in_date
+        check_out_date = instance.check_out_date
         guests = instance.guests
-        rooms = [room for room in json_data["restaurants"] if room_type in room["type"]]
+        
+        rooms = [room for room in json_data["accomodations"]["rooms"] if room_type in room["type"]]
         if len(rooms) == 0:
             return f"There is no room exists with room type {room_type}"
         
@@ -192,17 +208,39 @@ class make_reservation(ToolBase):
     user_id: int = Field(description="The identifier for the user making the reservation.")
     
     @classmethod
-    def invoke(cls, input: Dict) -> str: 
+    def invoke(cls, input: Dict) -> str:
         
+        room_type = input.get("room_type", None)
+        check_in_date = input.get("check_in_date", None)
+        check_out_date = input.get("check_out_date", None)
+        guests = input.get("guests", None)
+        user_id = input.get("user_id", None)
+        
+        missing = []
+        if not room_type:
+            missing.append("room_type")
+        if not check_in_date:
+            missing.append("check_in_date")
+        if not check_out_date:
+            missing.append("check_out_date")
+        if not guests:
+            missing.append("guests")
+        if not user_id:
+            missing.append("user_id")
+
+        if len(missing):
+            value = ", ".join(missing)
+            return f"Unable to complete the reservation. The following required arguments are missing:{value}."   
+    
+
         instance = cls(**input)
         room_type = instance.room_type
         check_in_date = instance.check_in_date
-        check_in_date = instance.check_in_date
+        check_out_date = instance.check_out_date
         guests = instance.guests
         user_id = instance.user_id
-        
 
-        rooms = [room for room in json_data["restaurants"] if room_type in room["type"]]
+        rooms = [room for room in json_data["accomodations"]["rooms"] if room_type in room["type"]]
         if len(rooms) == 0:
             return f"There is no room exists with room type {room_type}"
         
@@ -222,7 +260,7 @@ class make_reservation(ToolBase):
             "room_number": room["room_number"],
             "room_type": room_type,
             "check_in_date": check_in_date,
-            "check_in_date": check_in_date,
+            "check_out_date": check_out_date,
             "guests": guests,
             "reservation_id": rand,
             "user_id": user_id,
@@ -241,16 +279,28 @@ class cancel_reservation(ToolBase):
     
     @classmethod
     def invoke(cls, input: Dict) -> str: 
-        """
-        Play a playlist by its name, starting with the first or a random song.
-        """
 
+        reservation_id = input.get("reservation_id", None)
+        user_id = input.get("user_id", None)
+
+        missing = []
+        if not reservation_id:
+            missing.append("reservation_id")
+        if not user_id:
+            missing.append("user_id")
+
+        if len(missing):
+            value = ", ".join(missing)
+            return f"Unable to cancel the reservation. The following required arguments are missing:{value}."     
+        
         instance = cls(**input)
         reservation_id = instance.reservation_id
         user_id = instance.user_id
 
+
+
         if reservation_id not in reservations:
-            return f"The is no reservations with the id: {reservation_id}"
+            return f"There is no reservations with the id: {reservation_id}"
         
         if reservations["reservation_id"]["user_id"] != user_id:
             return "The user id is wrong, please provide same user id that was used make to reservation."
@@ -274,6 +324,15 @@ class modify_reservation(ToolBase):
 
     @classmethod
     def invoke(cls, input: Dict) -> str: 
+        
+        user_id = input.get("user_id", None)
+        reservation_id = input.get("reservation_id", None)
+
+        missing = []
+        if not reservation_id:
+            missing.append("reservation_id")
+        if not user_id:
+            missing.append("user_id")
 
         instance = cls(**input)
         new_room_type = instance.new_room_type
@@ -283,8 +342,16 @@ class modify_reservation(ToolBase):
         user_id = instance.user_id
         reservation_id = instance.reservation_id
 
+        if len(missing):
+            value = ", ".join(missing)
+            return f"Unable to modify the reservation. The following required arguments are missing:{value}."     
+
+        if not (new_room_type or new_check_in_date or new_check_out_date or guests):
+            return "Unable to modify the reservation. One of the following arguments must be passed: new_room_type, new_check_in_date, new_check_out_date, guests."     
+
+
         if reservation_id not in reservations:
-            return f"The is no reservations with the id: {reservation_id}"
+            return f"There is no reservations with the id: {reservation_id}"
         
         if reservations["reservation_id"]["user_id"] != user_id:
             return "The user id is wrong, please provide same user id that was used make to reservation."
@@ -317,7 +384,7 @@ class modify_reservation(ToolBase):
         return f"The reservation {reservation_id} is modified correctly: {json.dumps(tmp_data)}"
 
 @tool_register
-class get_reservation_details(ToolBase):
+class reservation_details(ToolBase):
     """Playing a specific playlist by its name."""
 
     user_id: int = Field(description="Id of user, could be passport or national Identity number")
@@ -325,13 +392,25 @@ class get_reservation_details(ToolBase):
 
     @classmethod
     def invoke(cls, input: Dict) -> str: 
+        user_id = input.get("user_id", None)
+        reservation_id = input.get("reservation_id", None)
+    
+        missing = []
+        if not reservation_id:
+            missing.append("reservation_id")
+        if not user_id:
+            missing.append("user_id")
+
+        if len(missing):
+            value = ", ".join(missing)
+            return f"Unable to get the details. The following required arguments are missing:{value}."     
 
         instance = cls(**input)
         user_id = instance.user_id
         reservation_id = instance.reservation_id
 
         if reservation_id not in reservations:
-            return f"The is no reservations with the id: {reservation_id}"
+            return f"There is no reservations with the id: {reservation_id}"
         
         if reservations["reservation_id"]["user_id"] != user_id:
             return "The user id is wrong, please provide same user id that was used make to reservation."

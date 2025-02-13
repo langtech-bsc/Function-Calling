@@ -314,6 +314,7 @@
       "number_of_guests": 2,
       "facilities": ["Wi-Fi", "TV", "bany privat"],
       "distribution of beds": "1 llit doble",
+      "description": "Habitació estàndard amb vista al jardí",
       "price": 80
     },
     "superior": {
@@ -326,12 +327,14 @@
       "number_of_guests": 2,
       "facilities": ["Wi-Fi", "TV", "bany privat", "balcon", "sala d'estar"],
       "distribution of beds": "1 llit doble",
+      "description": "Suite  amb vista al jardí",
       "price": 200
     },
     "apartment": {
       "number_of_guests": 4,
       "facilities": ["Wi-Fi", "TV", "bany privat", "cuina"],
       "distribution of beds": "2 llits individuals",
+      "description": "Apartment  amb vista al jardí",
       "price": 350
     }
   },

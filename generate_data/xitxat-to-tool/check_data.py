@@ -3,7 +3,7 @@ import argparse
 import json
 
 # Set up logging configuration
-logging.basicConfig(level=logging.WARN, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 roles = ["human", "gpt", "tool"]

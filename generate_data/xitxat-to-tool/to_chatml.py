@@ -24,8 +24,10 @@ def save_json(output_path, data):
 def run(input_path, output_path):
     data = read_json(input_path)
         
-    for raw in data:
+    for i, raw in enumerate(data):
         conversations = raw["conversations"]
+        if i % 2 == 0 and conversations[0]["from"] == "system":
+            conversations.pop(0)
         for conv in conversations:
             if conv["from"] == "gpt" and conv.get("tool_calls", None):
                 tool_calls = conv["tool_calls"]
