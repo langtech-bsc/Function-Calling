@@ -13,15 +13,19 @@ class ModelManager(ClassManager):
 class BaseModel(ABC):
     def __init__(self):
         pass
-
-    def _get_params(self, params, restricted_keys = {}):
-        default_params = { "max_tokens": 6000, "temperature": 0.2, }
-        default_params.update(params)
-        
+    
+    @abstractmethod
+    def get_model_name(self):
+        pass
+    def _get_params(self, params, default_params, restricted_keys = {}):
         found_keys = restricted_keys.intersection(params)
         if found_keys:
-            raise ValueError(f"Can't pass {', '.join(found_keys)} in model-params, please remove them.")
-        return default_params
+            raise ValueError(f"Can't pass '{', '.join(found_keys)}' in model-params, please remove them.")
+        
+        new_parasm = {}
+        new_parasm.update(default_params)
+        new_parasm.update(params)
+        return new_parasm
     
     def print_args(self):
         attr = {"Model API": self.__class__.__name__}

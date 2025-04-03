@@ -1,7 +1,9 @@
 from generate_dataset.models.model_manager import ModelManager, BaseModel
 from openai import OpenAI
+from generate_dataset.utils.logger import setup_logger
 import time
 
+logger = setup_logger(__name__)
 
 @ModelManager.register("openai")
 class OpenAIChat(BaseModel):
@@ -9,25 +11,30 @@ class OpenAIChat(BaseModel):
         self.api_url = api_url
         self.model = model
         self._api_key = api_key
-        self._client = OpenAI(
-            base_url=self.api_url,  
-            api_key=api_key
-        )
-        self.model_params = self._get_params(model_params, {"model", "messages", "stream"})
+        self._client = OpenAI(base_url=self.api_url, api_key=api_key)
 
+        default_params = { "max_tokens": 5000, "temperature": 0.2}
+        self.model_params = self._get_params(model_params, default_params, {"model", "messages", "stream", "api_key", "api_url"})
+
+    def get_model_name(self):
+        return self.model
 
     def get_response(self, messages, wait_for_connection=False):
         params = {"model": self.model, "messages": messages, "stream": False}
         params.update(self.model_params)
         first = True
-        
         while wait_for_connection or first:
             try:
                 first = False
+                logger.debug("Calling chat.completions.create()")
                 response = self._client.chat.completions.create(**params)
-                print(response.choices[0].message.content)
-                return "TODO"
+                return response.choices[0].message.content
             except Exception as err:
-                print("Error: openai api connection error waiting...")
+                msg = ". Waiting for connection to be established..." if wait_for_connection else ""
+                logger.error(f"Openai API {err}{msg}")
+                if not wait_for_connection:
+                    raise err
+                else:
+                    logger.error(msg)
                 time.sleep(60)
 

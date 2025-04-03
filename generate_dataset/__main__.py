@@ -43,13 +43,14 @@ def init_distributed():
 class SyntheticDataGenerator:
 
     @classmethod
-    def run(cls, method, method_args, model, model_args, model_params, input, output, global_rank, world_size):
-        args = dict(pair.split('=') for pair in model_args.split(',')) if model_args else {}
-        args["model_params"] = model_params
-        model_instance:BaseModel = ModelManager.get_class(model)(**args)
-
-
+    def run(cls, method, method_args, model, model_args, input, output, global_rank, world_size):
+        model_instance:BaseModel = ModelManager.get_class(model)(**model_args)
         data_instance:BaseMethod = MethodManager.get_class(method)(input, output, global_rank, **method_args)
+
+        if global_rank == 0:
+            logger.info(model_instance.print_args())
+            logger.info(data_instance.print_args())
+        torch.distributed.barrier()
 
         total = len(data_instance)
         local_size = total // world_size
@@ -64,15 +65,20 @@ class SyntheticDataGenerator:
             end_idx = start_idx + local_size
         
         start_time = time.time()
+        model = model_instance.get_model_name()
+        logger.info(f"Starting generating data.")
         for i in range(start_idx, end_idx):
             start_time_tmp = time.time()
             if not data_instance.is_done(i):
-                data = data_instance.generate_data(i)
+                data = data_instance.generate_data(i, model_instance.get_response)
                 data[data_instance.unique_key] = data_instance.get_unique_id(i)
+                data["model"] = model
                 data_instance.set_record(data, i)
-        
-            execution_time = time.time() - start_time_tmp
-            print(f"Record {i}/{end_idx} processed in time: {execution_time:.6f} seconds")
+
+                execution_time = time.time() - start_time_tmp
+                logger.info(f"Record {i}/{end_idx} processed in time: {execution_time:.6f} seconds")
+            else:
+                logger.info(f"Record {i}/{end_idx} skiped.")
 
         torch.distributed.barrier()
         if global_rank == 0:
@@ -84,37 +90,35 @@ class SyntheticDataGenerator:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", type=str, help="Path to input dataset")
-    parser.add_argument("--output", type=str, help="Path to output dataset")
-    parser.add_argument("--data-method", default="default", type=str, help="Data type to generate")
-    parser.add_argument("--model", type=str, help="Model to use to generate response")
-    parser.add_argument("--unique-key", type=str, default="id", help="A unique key from the dataset, by default is `id`")
-    parser.add_argument("--task", type=str, help="A json file containing messages_list, list of output_keys and output_types. output_keys and output_types are optional and will be replaced if passed in arguments")
-    parser.add_argument(
-        "--output-keys",
-        type=str,
-        nargs="+",
-        help="List of names for new keys to save for the new dataset, must match length of `messages_list`. Example: --output-keys key1 key2 key3"
-    )
-
-    parser.add_argument(
-        "--output-types",
-        type=str,
-        nargs="+",
-        choices=["json", "str"],
-        help="List of types for new keys to save for the new dataset, must match length of `output-keys`. Example: --output_types str str json"
-    )
-
-    parser.add_argument("--model-args", type=str, help="Arguments for the method should be separated by commas. Example: --model_args='api_url=api-url,api_key=your-key,model=model-name'.")
-    parser.add_argument("--model-params", type=str, default='{}', help="Could be a json string or path to a file.")
+    parser.add_argument("--input", type=str, help="Path to input dataset.")
+    parser.add_argument("--output", type=str, help="Path to output dataset.")
+    parser.add_argument("--data-method", default="default", choices=MethodManager.list_classes(), type=str, help="Data type to generate.")
+    parser.add_argument("--model", type=str, choices=ModelManager.list_classes(), help="Model to use to generate response.")
+    parser.add_argument("--unique-key", type=str, default=None, help="A unique key from the dataset, by default is `id`.")
+    parser.add_argument("--task", type=str, help="A json file containing messages_list, list of output_keys and output_types.")
+    parser.add_argument("--model-args", type=str, default=None, help=f"Arguments for the method should be separated by commas. Example: 'api_url=http://localhost:8080/v1/,api_key=none,model=tgi'.")
+    parser.add_argument("--model-params", type=str, default=None, help="Path to a yaml file containing extra paramters.")
     parser.add_argument("--data-args", type=str, help="Arguments for the method should be separated by commas. Example: --data_args='my_key=my_value,...'.")
-    parser.add_argument("--add-unique-id", action="store_true", help="If your dataset doesn't have a unique id you can add it.")
     parser.add_argument("--list-data-methods", action="store_true", help="List all available methods to generate dataset.")
     parser.add_argument("--list-model-apis", action="store_true", help="List all available models.")
+    parser.add_argument("--generate-task-sample", type=str, default=None, choices=["simple", "complex"], help="Generate a example task file.")
+    parser.add_argument("--generate-model-params", type=str, default=None, choices=["openai"], help="Generate a example model parameters file.")
+    import sys
 
-    
-    # Initialize distributed processing
     world_size, global_rank, _ = init_distributed()
+
+
+    if '--help' in sys.argv:
+        # Only print the help message when rank == 0
+        if dist.is_initialized():
+            rank = dist.get_rank()
+            if rank == 0:
+                parser.print_help()
+            dist.barrier()  # Ensure all processes reach this point
+        else:
+            parser.print_help()
+        return
+    # Initialize distributed processing
 
     args = parser.parse_args()
 
@@ -122,38 +126,62 @@ def main():
     if args.list_data_methods:
         if global_rank == 0:
             print()
-            print("\nAvailable data methods:", list(MethodManager.list_methods()))
+            print("\nAvailable data methods:", list(MethodManager.list_classes()))
         return
-    elif args.list_model_apis:
+    if args.list_model_apis:
         if global_rank == 0:
-            print("\nAvailable model methods:", list(MethodManager.list_methods()))
+            print("\nAvailable model methods:", list(ModelManager.list_classes()))
         return
-    elif not args.input:
-        parser.error("--input is required")
-    elif not args.input:
-        parser.error("--input is required")
-    elif not args.task:
-        parser.error("--task is required")
-    elif not args.data_method:
-        parser.error("--data-method is required")
-    elif not args.model:
-        parser.error("--model is required")
+    if args.generate_task_sample:
+        if global_rank == 0:
+            file_path = os.path.join('/home/arana/Documents/langtech/Function-Calling/generate_dataset/tasks_examples/', f'{args.generate_task_sample}.yml')
+            output_file = "task_example.yml"
+            utils.copy_yaml(file_path, output_file)
+            print("Created: " + output_file)
+        return
     
-    model_params = utils.load_json(args.model_params)
-    task = utils.load_json(args.task)
-    if args.output_types:
-        task["output_types"] = args.output_types
-    if args.output_keys:
-        task["output_keys"] = args.output_keys
+    if args.generate_model_params:
+        if global_rank == 0:
+            file_path = os.path.join('/home/arana/Documents/langtech/Function-Calling/generate_dataset/models_examples/', f'{args.generate_model_params}.yml')
+            output_file = "model_params_example.yml"
+            utils.copy_yaml(file_path, output_file)
+            print("Created: " + output_file)
+        return
+    
+    errors = []
+
+    # Check for required arguments and append errors to the list
+    if not args.input:
+        errors.append("--input")
+    if not args.input:
+        errors.append("--output")
+    if not args.task:
+        errors.append("--task")
+    if not args.data_method:
+        errors.append("--data-method")
+    if not args.model:
+        errors.append("--model")
+    
+    if not args.unique_key:
+        logger.warning("A unique key was not provided (--unique-key). By default, the field index will be used. Ensure that the input dataset remains unchanged each time the task is executed, or provide a unique key for each field to enable accurate detection.")
+    if errors:
+        if global_rank == 0:
+            parser.error(",".join(errors) + " are required.")
+        return
+    
+    torch.distributed.barrier()
+
+    task = utils.read_yaml(args.task)
 
     data_args = dict(pair.split('=') for pair in args.data_args.split(',')) if args.data_args else {}
     data_args.update(task)
     data_args["unique_key"] = args.unique_key
 
-    SyntheticDataGenerator.run(args.data_method, data_args, args.model, args.model_args, model_params, args.input, args.output, global_rank, world_size)
+    model_args = dict(pair.split('=') for pair in args.model_args.split(',')) if args.model_args else {}
+    model_args["model_params"] = utils.read_yaml(args.model_params) if args.model_params else {}
 
+    SyntheticDataGenerator.run(args.data_method, data_args, args.model, model_args, args.input, args.output, global_rank, world_size)
     torch.distributed.barrier()
-
 if __name__ == "__main__":
     main()
 

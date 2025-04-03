@@ -11,7 +11,9 @@ from generate_dataset.utils import timer
 from generate_dataset.utils.logger import setup_logger
 from generate_dataset.utils.class_manager import ClassManager
 from typing import List, Dict, Protocol, Union, Any
-import re
+from types import SimpleNamespace
+import numpy as np
+import string
 
 class MessagesType(Dict[str, str]):
     """Defines the message format with 'role' and 'content' keys."""
@@ -41,21 +43,33 @@ class MethodManager(ClassManager):
     pass
 
 class BaseMethod(ABC):
-    def __init__(self, input: str, output: str, global_rank:int, messages_list: List[MessagesType], unique_key, output_keys, output_types):
+    def __init__(self, input: str, output: str, global_rank:int, messages_list: List[MessagesType], unique_key, output_keys, output_types, random_extra_keys):
+        self._default_unique_id = "_index"
         self.input = input
         self.output = output
         self.global_rank = global_rank
-        self.messages_list = messages_list
-        self.unique_key = unique_key
+        self.unique_key = unique_key if unique_key else self._default_unique_id
         self.output_keys = output_keys
         self.output_types = output_types
+        self.random_extra_keys = random_extra_keys
+        self.messages_list = messages_list
+        self.replaceable_keys = [self._get_replaceable_keys(messages) for messages in self.messages_list]
         self._detect_file_type(self.output)
-        self.data = self._read_file(self.input)
-        print(self.data)
-        self._check_data(self.data, self.unique_key, self.output_keys, self.output_types, self.messages_list)
-        self.processed_data_ids = self.extract_unique_key_values(self.output_path_pattern, self.unique_key)
+        self._data = self.load_data(self.input)
+        if self._default_unique_id == self.unique_key:
+            self._data[self.unique_key] = range(len(self._data))
         
-        self.output_path_pattern, self.output_rank_path = self._generate_temporal_path(self.output, self.global_rank)
+        self._check_data(self._data, self.unique_key, self.output_keys, self.output_types, self.messages_list)
+        self._output_path_pattern, self._output_rank_path = self._generate_temporal_path(self.output, self.global_rank)
+        self._output_path_pattern = self.extract_unique_key_values(self._output_path_pattern, self.unique_key)
+    
+    @staticmethod
+    def _get_replaceable_keys(messages: MessagesType):
+        keys = []
+        for msg in messages:
+            formatter = string.Formatter()
+            keys.extend([field_name for _, field_name, _, _ in formatter.parse(msg["content"]) if field_name])
+        return keys
 
     @staticmethod
     def _check_data(df, unique_key, output_keys, output_types, messages_list):
@@ -69,55 +83,74 @@ class BaseMethod(ABC):
         if not df[unique_key].is_unique:
             raise ValueError(f"The unique key '{unique_key}' exists but its values are not unique in the dataset.")
         
-        not_permitted_types = set(output_types) - ["json", "str"]
+        not_permitted_types = set(output_types) - set(["json", "str"])
         if not_permitted_types:
             raise TypeError(f"Output types '{str(not_permitted_types)}' are not permitted")
 
         #TODO: Check messages format
 
-
+    def load_data(self, path):
+        return self._read_file(path)
+    
     def get_unique_id(self, index):
-        return self.data.at[index, self.unique_key]
+        value = self._data.at[index, self.unique_key]
+        return int(value) if isinstance(value, np.integer) else value
+    
+    def get_extra_keys(self, index):
+        new_data = {}
+        for key in self.random_extra_keys:
+            idx = index % len(self.random_extra_keys[key])
+            new_data[key] = self.random_extra_keys[key][idx]
 
+        return new_data
+    
+    def print_args(self):
+        attr = {"Data method": self.__class__.__name__}
+        public_attrs = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        attr.update(public_attrs)
+        return SimpleNamespace(**attr)
+    
     def generate_messages(self, json_data: Dict[str, Any], index: int = -1) -> List[MessagesType]:
-            """Substitutes placeholders in messages with values from json_data.
+        """Substitutes placeholders in messages with values from json_data.
 
-            Args:
-                json_data (Dict[str, Any]): Dictionary containing values to replace placeholders.
-                index (int, optional): If -1, all messages are processed. Otherwise, only messages[index] is processed.
+        Args:
+            json_data (Dict[str, Any]): Dictionary containing values to replace placeholders.
+            index (int, optional): If -1, all messages are processed. Otherwise, only messages[index] is processed.
 
-            Returns:
-                List[Dict[str, str]]: The modified messages with placeholders replaced.
+        Returns:
+            List[Dict[str, str]]: The modified messages with placeholders replaced.
+        
+        Raises:
+            KeyError: If a placeholder is found but not in json_data.
+            IndexError: If index is out of range.
+            ValueError: If no changes were made after substitution.
+        """
+
+        is_changed = False
+
+        def substitute_placeholders(template: str) -> str:
+            """Replaces placeholders using str.format(), raising an error if a key is missing."""
+            try:
+                text = template.format(**json_data)
+                return (text, True) if text != template else (text, False)
             
-            Raises:
-                KeyError: If a placeholder is found but not in json_data.
-                IndexError: If index is out of range.
-                ValueError: If no changes were made after substitution.
-            """
+            except KeyError as e:
+                raise KeyError(f"Missing key in json_data: {e}. Please ensure that your input dataset contains all the required keys for the task.")
 
-            changed = False
+        if 0 <= index < len(self.messages_list):
+            messages = self.messages_list[index]
+            new_messages = []
+            for msg in messages:
+                content, changed = substitute_placeholders(msg["content"])
+                new_messages.append({"role": msg["role"], "content": content})
+                is_changed = is_changed or changed
+        else:
+            raise IndexError("Invalid index: out of range.")
 
-            def substitute_placeholders(text: str) -> str:
-                """Replaces placeholders using str.format(), raising an error if a key is missing."""
-                try:
-                    new_text = text.format(**json_data)  # Uses str.format() for substitution
-                    if not changed and new_text != text:
-                        changed = True
-                    return new_text
-                
-                except KeyError as e:
-                    raise KeyError(f"Missing key in json_data: {e}")
-
-            if 0 <= index < len(self.messages_list):
-                msg = self.messages_list[index]
-                messages = [{"role": msg["role"], "content": substitute_placeholders(msg["content"])}]
-            else:
-                raise IndexError("Invalid index: out of range.")
-
-            if not changed:
-                raise ValueError("No substitutions made: The content is the same as before.")
-            
-            return messages
+        if not changed:
+            raise ValueError("No substitutions made: The content is the same as before.")
+        
+        return new_messages
 
     @abstractmethod
     def generate_data(self, index, get_llm_response: GetLLMResponseType):
@@ -125,7 +158,7 @@ class BaseMethod(ABC):
         pass
 
     def is_done(self, index):
-        return self.data.at[index, self.unique_key] in self.processed_data_ids
+        return self._data.at[index, self.unique_key] in self._output_path_pattern
 
     @staticmethod
     def _generate_temporal_path(path: str, number: int) -> str:
@@ -192,18 +225,20 @@ class BaseMethod(ABC):
             df = BaseMethod._read_file(file_path)  # Read JSONL file into a DataFrame
 
             # Add unique values from the current file to the set
-            unique_values.update(df[key].dropna().unique())
+            if not df.empty:
+                unique_values.update(df[key].dropna().unique())
 
         return unique_values 
 
     def set_record(self, record, index):
         """Append JSON line by line"""
-        with open(self.output_rank_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record) + "\n")
+        logger.debug(f"Setting record for field {index} in {self._output_rank_path}.")
+        with open(self._output_rank_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     def save_all(self):
         file_type = BaseMethod._detect_file_type(self.output)
-        df = BaseMethod._get_all_records(self.output_path_pattern)
+        df = BaseMethod._get_all_records(self._output_path_pattern)
     
         if file_type == "json":
             df.to_json(self.output, orient="records", indent=4)
@@ -214,13 +249,13 @@ class BaseMethod(ABC):
         elif file_type == "parquet":
             df.to_parquet(self.output, index=False)
         
-        [os.remove(file) for file in sorted(glob.glob(self.output_path_pattern))]
+        [os.remove(file) for file in sorted(glob.glob(self._output_path_pattern))]
         logging.info(f"Saved: {self.output}")
 
     def __len__(self):
-        return len(self.data)
+        return len(self._data)
 
     def __getitem__(self, index):
-        self.data[index]
+        self._data[index]
 
 
