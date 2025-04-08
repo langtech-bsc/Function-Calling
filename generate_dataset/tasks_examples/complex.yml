@@ -68,7 +68,7 @@ messages_list:
                   "description": "<brief description of the function's purpose>",
                   "parameters": {{
                     "type": "object",
-                    "properties": {{}}  # Must be empty the properties
+                    "properties": {...}  # Properties object, can include parameters if needed; otherwise, keep it empty.
                     "required": [],
                     "additionalProperties": false
                   }}
@@ -89,25 +89,15 @@ messages_list:
             - Only generate functions that require additional user input or actions that cannot be inferred automatically by the LLM.
 
         10. **Auxiliary Functions**  
-            - If a function requires specific information as a parameter, create an auxiliary function to gather the necessary data for those parameters.  
-            - Do not add any parameters to auxiliary functions, as these functions are solely intended for retrieving information from the database.  
-            - Ensure these auxiliary functions are placed at the end of all other functions and are designed to provide users with options for the required parameters.
+          - When a function requires specific input parameters, create auxiliary functions to retrieve the necessary data for those parameters from the database.  
+          - First, determine whether the function needs parameters. If it does, include the required logic in the auxiliary function accordingly; otherwise, design it without parameters.  
+          - Do **not** pass parameters to auxiliary functions — they are meant solely to fetch data directly from the database.  
+          - Place all auxiliary functions **after** the main functional logic in your code. These should provide users with selectable or retrievable options for the required parameters.
 
         11. **Example Input:**  
             ```
-            **Conversation**:
-            agent: Bon dia! Com el/la puc ajudar?
-            usuari: Hola mira es que acabo d'arribar a un pis nou, i aquí no hi ha internet ni hi ha res. Volia saber a veure quines ofertes teníeu per posar wifi aquí a casa.
-            agent: Cap problema. Tenim tres opcions: telèfon mòbil + internet (30 euros mensuals), telèfon mòbil + telèfon fixe + internet (40 euros mensuals) o televisió + internet (45 euros mensuals). L'interessaria cap d'aquestes combinacions?
-            usuari: Ah doncs mira teniu bones ofertes veig. Això dels 45 euros per la tele i l'internet quant de temps seria, vull dir, hi ha uns mesos mínim que ho hagi de contractar o puc donar-me de baixa quan sigui?
-            agent: Sí. Serien 3 mesos mínim de permanència.
-            usuari: Està molt bé això, m'interessa si si.
-            agent: Quin és el seu nom i cognoms?
-            usuari: soc l'Anna Tur Marí.
-            ...
-
-            **Topic**:
-            Smart Home Automation (Lighting, Temperature, and Security Control)
+            **Persona**:
+              A sarcastic librarian who secretly writes mystery novels and remembers everything you've ever read.
             ```
 
         12. **Example Output:**  
@@ -287,7 +277,8 @@ output_keys:
 
 output_types:
   - json  # Generated conversations will be formatted as JSON.
-  - str   # Generate system prompt will be formatted as str.
+  - json   # Generate system prompt will be formatted as str.
+  - str
 
 random_extra_keys: # These keys are picked randomly depending on the field.
   language:

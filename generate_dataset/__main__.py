@@ -43,13 +43,13 @@ def init_distributed():
 class SyntheticDataGenerator:
 
     @classmethod
-    def run(cls, method, method_args, model, model_args, input, output, global_rank, world_size):
+    def run(cls, method, method_args, model, model_args, input, output, wait_for_model, global_rank, world_size):
         model_instance:BaseModel = ModelManager.get_class(model)(**model_args)
-        data_instance:BaseMethod = MethodManager.get_class(method)(input, output, global_rank, **method_args)
+        data_instance:BaseMethod = MethodManager.get_class(method)(input, output, global_rank, wait_for_model, **method_args)
 
         if global_rank == 0:
-            logger.info(model_instance.print_args())
-            logger.info(data_instance.print_args())
+            model_instance.print_args()
+            data_instance.print_args()
         torch.distributed.barrier()
 
         total = len(data_instance)
@@ -101,6 +101,7 @@ def main():
     parser.add_argument("--data-args", type=str, help="Arguments for the method should be separated by commas. Example: --data_args='my_key=my_value,...'.")
     parser.add_argument("--list-data-methods", action="store_true", help="List all available methods to generate dataset.")
     parser.add_argument("--list-model-apis", action="store_true", help="List all available models.")
+    parser.add_argument("--wait-for-model", action="store_true", help="Wait for the model, if not available it will keep wait in a loop, this si good if your connection is not stable.")
     parser.add_argument("--generate-task-sample", type=str, default=None, choices=["simple", "complex"], help="Generate a example task file.")
     parser.add_argument("--generate-model-params", type=str, default=None, choices=["openai"], help="Generate a example model parameters file.")
     import sys
@@ -180,7 +181,7 @@ def main():
     model_args = dict(pair.split('=') for pair in args.model_args.split(',')) if args.model_args else {}
     model_args["model_params"] = utils.read_yaml(args.model_params) if args.model_params else {}
 
-    SyntheticDataGenerator.run(args.data_method, data_args, args.model, model_args, args.input, args.output, global_rank, world_size)
+    SyntheticDataGenerator.run(args.data_method, data_args, args.model, model_args, args.input, args.output, args.wait_for_model, global_rank, world_size)
     torch.distributed.barrier()
 if __name__ == "__main__":
     main()

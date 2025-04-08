@@ -8,8 +8,8 @@ logger = setup_logger(__name__)
 
 @MethodManager.register("default")
 class Default(BaseMethod):
-    def __init__(self, input: str, output: str, global_rank:int, messages_list: List[MessagesType], unique_key, output_keys, output_types, random_extra_keys):
-        super().__init__(input, output, global_rank, messages_list, unique_key, output_keys, output_types, random_extra_keys)
+    def __init__(self, input: str, output: str, global_rank:int, wait_for_model:bool, messages_list: List[MessagesType], unique_key, output_keys, output_types, random_extra_keys):
+        super().__init__(input, output, global_rank, wait_for_model, messages_list, unique_key, output_keys, output_types, random_extra_keys)
 
     def generate_data(self, index, get_llm_response: GetLLMResponseType) -> Dict[str, Any]:
         logger.debug(f"Generating data for field {index}.")
@@ -27,7 +27,7 @@ class Default(BaseMethod):
             messages = self.generate_messages(json_data, i)
             logger.debug(f"Messages: (task: {i}, field: {index}):\n{json.dumps(messages, indent=4, ensure_ascii=False)}")
             
-            response = get_llm_response(messages=messages, wait_for_connection=True)
+            response = get_llm_response(messages=messages, wait_for_connection=self.wait_for_model)
             logger.debug(f"LLM Response: (task: {i}, field: {index}):\n{response}")
             
             # If the response type is JSON, convert it to JSON format

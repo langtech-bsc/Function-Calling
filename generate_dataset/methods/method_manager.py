@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import os
+from pprint import pformat
 import sys
 import importlib.util
 import logging
@@ -43,11 +44,12 @@ class MethodManager(ClassManager):
     pass
 
 class BaseMethod(ABC):
-    def __init__(self, input: str, output: str, global_rank:int, messages_list: List[MessagesType], unique_key, output_keys, output_types, random_extra_keys):
+    def __init__(self, input: str, output: str, global_rank:int, wait_for_model:bool, messages_list: List[MessagesType], unique_key, output_keys, output_types, random_extra_keys):
         self._default_unique_id = "_index"
         self.input = input
         self.output = output
         self.global_rank = global_rank
+        self.wait_for_model = wait_for_model
         self.unique_key = unique_key if unique_key else self._default_unique_id
         self.output_keys = output_keys
         self.output_types = output_types
@@ -108,7 +110,7 @@ class BaseMethod(ABC):
         attr = {"Data method": self.__class__.__name__}
         public_attrs = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         attr.update(public_attrs)
-        return SimpleNamespace(**attr)
+        logger.info("Namespace:\n%s", pformat(vars(SimpleNamespace(**attr))))
     
     def generate_messages(self, json_data: Dict[str, Any], index: int = -1) -> List[MessagesType]:
         """Substitutes placeholders in messages with values from json_data.
