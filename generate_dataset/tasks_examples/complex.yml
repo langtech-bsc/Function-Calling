@@ -68,7 +68,7 @@ messages_list:
                   "description": "<brief description of the function's purpose>",
                   "parameters": {{
                     "type": "object",
-                    "properties": {...}  # Properties object, can include parameters if needed; otherwise, keep it empty.
+                    "properties": {{...}}  # Properties object, can include parameters if needed; otherwise, keep it empty.
                     "required": [],
                     "additionalProperties": false
                   }}

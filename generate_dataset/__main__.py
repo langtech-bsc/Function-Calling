@@ -122,6 +122,7 @@ def main():
     # Initialize distributed processing
 
     args = parser.parse_args()
+    current_dir = os.path.dirname(__file__)
 
     # Ensure required arguments are provided unless --list-methods is used
     if args.list_data_methods:
@@ -135,7 +136,7 @@ def main():
         return
     if args.generate_task_sample:
         if global_rank == 0:
-            file_path = os.path.join('/home/arana/Documents/langtech/Function-Calling/generate_dataset/tasks_examples/', f'{args.generate_task_sample}.yml')
+            file_path = os.path.join(current_dir, 'tasks_examples', f'{args.generate_task_sample}.yml')
             output_file = "task_example.yml"
             utils.copy_yaml(file_path, output_file)
             print("Created: " + output_file)
@@ -143,7 +144,7 @@ def main():
     
     if args.generate_model_params:
         if global_rank == 0:
-            file_path = os.path.join('/home/arana/Documents/langtech/Function-Calling/generate_dataset/models_examples/', f'{args.generate_model_params}.yml')
+            file_path = os.path.join(current_dir, 'models_examples', f'{args.generate_model_params}.yml')
             output_file = "model_params_example.yml"
             utils.copy_yaml(file_path, output_file)
             print("Created: " + output_file)
